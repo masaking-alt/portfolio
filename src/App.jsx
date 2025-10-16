@@ -60,12 +60,10 @@ function App() {
 
       <main>
         <section id="hero">
+          <h2>はじめまして！</h2>
           <div className="hero-content">
             <img src={profileImage} alt="プロフィール写真" className="profile-image" />
-            <div className="hero-text">
-              <h2>はじめまして！</h2>
-              <p>Webデザインとフロントエンド開発に興味があります。ユーザーにとって魅力的で使いやすいサイトを作れるようになりたいです。よろしくお願いします！</p>
-            </div>
+            <p>Webデザインとフロントエンド開発に興味があります。ユーザーにとって魅力的で使いやすいサイトを作れるようになりたいです。よろしくお願いします！</p>
           </div>
         </section>
 

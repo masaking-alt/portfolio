@@ -34,16 +34,20 @@ function Home() {
       <section id="about">
         <h2>About</h2>
         <p>こんにちは、まさきんぐです。高知大学で情報科学を専攻している大学生です。 バイブコーディングにハマっていて、日々学んだことを形にしています。昔からプログラミングに興味があり、AIを利用することでそのハードルが下がったため、web制作に挑戦しています。JavaScriptでサイトに動きを与えるのが楽しいです。また、このサイトは以下の技術を使って製作しました。</p>
-        <ul>
-          <li>HTML</li>
-          <li>CSS</li>
-          <li>JavaScript (React)</li>
-          <li>Vite</li>
-          <li>React Router</li>
-          <li>ESLint</li>
-          <li>Node.js</li>
-          <li>npm</li>
-        </ul>
+        <div className="technologies">
+          {[
+            "HTML",
+            "CSS",
+            "JavaScript (React)",
+            "Vite",
+            "React Router",
+            "ESLint",
+            "Node.js",
+            "npm",
+          ].map((tech, index) => (
+            <span key={index} className="tech-tag">{tech}</span>
+          ))}
+        </div>
         <p>好きなゲームはモンハンで、特に3DSのシリーズが好きです。好きなアーティストはVaundy。アニメ、マンガ、映画を見るのも好きです。</p>
         <p>インスタで日常を上げています。気軽に覗いてみてください。</p>
       </section>

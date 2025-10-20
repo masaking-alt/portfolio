@@ -17,13 +17,22 @@ function WorkDetail() {
 
   return (
     <div className="work-detail-container">
-      <a href={work.externalUrl} target="_blank" rel="noopener noreferrer">
-        <img src={work.imageUrl} alt={work.title} className="work-detail-image" />
-      </a>
-      <a href={work.externalUrl} target="_blank" rel="noopener noreferrer" className="title-link">
-        <h1>{work.title}</h1>
-      </a>
-      <p>{work.description}</p>
+      <div className="work-content">
+        <a href={work.externalUrl} target="_blank" rel="noopener noreferrer">
+          <img src={work.imageUrl} alt={work.title} className="work-detail-image" />
+        </a>
+        <a href={work.externalUrl} target="_blank" rel="noopener noreferrer" className="title-link">
+          <h1>{work.title}</h1>
+        </a>
+        <p>{work.description}</p>
+
+        <h3>使用技術</h3>
+        <div className="technologies">
+          {work.technologies && work.technologies.map((tech, index) => (
+            <span key={index} className="tech-tag">{tech}</span>
+          ))}
+        </div>
+      </div>
 
       <div className="navigation-buttons">
         {prevWork && <Link to={`/work/${prevWork.id}`} className="nav-link">前へ</Link>}

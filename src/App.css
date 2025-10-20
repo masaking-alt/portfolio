@@ -1,4 +1,3 @@
-
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -100,4 +99,21 @@ h2 {
 
 #contact {
   text-align: center;
+}
+
+.technologies {
+  margin-top: 15px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.tech-tag {
+  display: inline-block;
+  background-color: #eee;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #333;
 }

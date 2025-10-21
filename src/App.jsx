@@ -22,7 +22,10 @@ function Home() {
           {works.map(work => (
             <div className="work-item" key={work.id}>
               <Link to={`/work/${work.id}`}>
-                <img src={work.imageUrl} alt={work.title} />
+                <picture>
+                  <source media="(max-width: 768px)" srcSet={work.imageUrl_sp} />
+                  <img src={work.imageUrl} alt={work.title} />
+                </picture>
                 {/* <h3>{work.title}</h3> */}
               </Link>
               {/* <p>{work.description}</p> */}

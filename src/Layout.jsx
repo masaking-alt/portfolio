@@ -54,7 +54,7 @@ function Layout() {
         <Outlet />
       </main>
       <footer className="footer">
-        <p>&copy; 2025 masaking</p>
+        <p>&copy; masaking</p>
       </footer>
     </div>
   );

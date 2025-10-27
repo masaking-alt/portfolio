@@ -27,4 +27,13 @@ export const works = [
     externalUrl: "https://memoapp-5rh.pages.dev/",
     technologies: ["React", "Create React App", "Testing Library", "Jest"],
   },
+  {
+    id: 4,
+    title: "Part-time Shift",
+    description: "スマホに最適化されたフルスタックのシフト管理アプリ。日付と勤務時間を登録すると、ダッシュボードで次の勤務や今月の労働時間・給与見込みを自動集計。カレンダー表示や csv エクスポートにも対応し、自分の予定をまとめて管理できます。",
+    imageUrl: "/parttime_shift.png",
+    imageUrl_sp: "/parttime_shift_s.png",
+    externalUrl: "https://parttime-shift.pages.dev/",
+    technologies: ["React", "TypeScript", "Vite", "Material UI", "Flask", "SQLite", "FullCalendar"],
+  },
 ];

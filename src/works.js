@@ -36,4 +36,13 @@ export const works = [
     externalUrl: "https://parttime-shift.pages.dev/",
     technologies: ["React", "TypeScript", "Vite", "Material UI", "Flask", "SQLite", "FullCalendar"],
   },
+  {
+    id: 5,
+    title: "総合映像研究会ホームページ",
+    description: "高知大学・総合映像研究会の公式サイトです。サークルの雰囲気を一気に伝えるヒーローセクションやサイドバー、活動予定・BBS・コンタクトなどの複数セクションを整備し、Markdown で管理する活動レポートをトップの一覧と詳細ページに分離して運用できる構成にしています。",
+    imageUrl: "/soueiken-hp.png",
+    imageUrl_sp: "/soueiken-hp-s.png",
+    externalUrl: "https://soueiken-hp.pages.dev/",
+    technologies: ["React", "Create React App", "React Router DOM", "Fetch API", "カスタム CSS", "自作 Markdown レンダラー"],
+  },
 ];

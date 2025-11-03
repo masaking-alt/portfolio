@@ -1,10 +1,14 @@
 
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { works } from './works';
 import './WorkDetail.css';
 
 function WorkDetail() {
   const { id } = useParams();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
   const currentWorkIndex = works.findIndex(work => work.id === parseInt(id));
   const work = works[currentWorkIndex];
 

@@ -22,10 +22,12 @@ function Home() {
           {works.map(work => (
             <div className="work-item" key={work.id}>
               <Link to={`/work/${work.id}`}>
-                <picture>
-                  <source media="(max-width: 768px)" srcSet={work.imageUrl_sp} />
-                  <img src={work.imageUrl} alt={work.title} />
-                </picture>
+                <div className={`work-image${work.imageVariant === "icon" ? " work-image--icon" : ""}`}>
+                  <picture>
+                    <source media="(max-width: 768px)" srcSet={work.imageUrl_sp} />
+                    <img src={work.imageUrl} alt={work.title} />
+                  </picture>
+                </div>
                 {/* <h3>{work.title}</h3> */}
               </Link>
               {/* <p>{work.description}</p> */}

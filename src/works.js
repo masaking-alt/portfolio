@@ -51,7 +51,7 @@ export const works = [
     description: "高知大学 Moodle 2025 ダッシュボードをフルリデザインする実験的な Chrome 拡張です。提出期限・公開・締切などのイベントを DOM 監視で検出し、タイプ別のグラデーションカードとして当日のセルに差し込みます。テーマ切り替え用クラスやカスタム CSS を注入してダークモードを強化し、既存 UI の階層やパネルの背景も再構成することで、重要情報だけを視認しやすくしました。",
     imageUrl: "/moodle_dashboard_tweaks.png",
     imageUrl_sp: "/moodle_dashboard_tweaks.png",
-    externalUrl: "https://github.com/masaking-alt/dashboard-extension",
+    externalUrl: "https://chromewebstore.google.com/detail/moodle-dashboard-tweaks/jmnmogonkjhmhgcncebieodddgbaamfg",
     technologies: ["Chrome Extension (Manifest V3)", "JavaScript", "Content Script", "CSS"],
     imageVariant: "icon",
   },

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './App.css';
@@ -5,13 +6,16 @@ import { works } from './works';
 import WorkDetail from './WorkDetail';
 import Layout from './Layout';
 import { Reveal } from './Reveal';
+import { ParallaxText } from './ParallaxText';
 
 
 function Home() {
   return (
     <div className="main-wrapper">
       <section id="hero" className="fullscreen-section">
-        <div className="bg-text">PORTFOLIO</div>
+        <div className="bg-text-wrapper">
+          <ParallaxText baseVelocity={-2}>PORTFOLIO</ParallaxText>
+        </div>
         <div className="hero-content">
           <h1 className="hero-title">
             <motion.span
@@ -44,11 +48,13 @@ function Home() {
       </section>
 
       <section id="works">
-        <div className="bg-text">WORKS</div>
+        <div className="bg-text-wrapper">
+          <ParallaxText baseVelocity={2}>WORKS</ParallaxText>
+        </div>
         <div className="works-container">
           {works.map((work, index) => (
             <Reveal key={work.id} width="100%" delay={index % 2 === 0 ? 0.2 : 0.4}>
-              <div className="work-item">
+              <div className={`work-item work-item-${index + 1}`}>
                 <Link to={`/work/${work.id}`} className="work-link">
                   <div className={`work-image${work.imageVariant === "icon" ? " work-image--icon" : ""}`}>
                     <picture>
@@ -59,7 +65,6 @@ function Home() {
                   <div className="work-info">
                     <span className="work-number">{(index + 1).toString().padStart(2, '0')}</span>
                     <h3>{work.title}</h3>
-                    <p className="work-description">{work.description}</p>
                     <span className="view-project">View Project &rarr;</span>
                   </div>
                 </Link>
@@ -70,7 +75,9 @@ function Home() {
       </section>
 
       <section id="about">
-        <div className="bg-text">ABOUT</div>
+        <div className="bg-text-wrapper">
+          <ParallaxText baseVelocity={-2}>ABOUT</ParallaxText>
+        </div>
         <div className="about-content">
           <Reveal width="100%">
             <div className="about-top">
@@ -92,6 +99,10 @@ function Home() {
             </Reveal>
           </div>
           <Reveal delay={0.5}>
+            <div className="technologies-header">
+              <h3>Built with</h3>
+              <p>このサイトは以下の技術を使用して制作しました</p>
+            </div>
             <div className="technologies">
               {[
                 "HTML", "CSS", "JavaScript (React)", "Vite",
@@ -105,7 +116,9 @@ function Home() {
       </section>
 
       <section id="contact">
-        <div className="bg-text">CONTACT</div>
+        <div className="bg-text-wrapper">
+          <ParallaxText baseVelocity={2}>CONTACT</ParallaxText>
+        </div>
         <div className="contact-content">
           <Reveal width="100%">
             <p>Let's create something together.</p>

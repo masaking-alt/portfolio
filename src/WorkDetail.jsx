@@ -45,10 +45,17 @@ function WorkDetail() {
         </div>
       </div>
 
-      <div className="navigation-buttons">
-        {prevWork && <Link to={`/work/${prevWork.id}`} className="nav-link">前へ</Link>}
-        {nextWork && <Link to={`/work/${nextWork.id}`} className="nav-link">次へ</Link>}
-      </div>
+      {prevWork && (
+        <Link to={`/work/${prevWork.id}`} className="nav-area nav-area-prev" aria-label="前の作品">
+          <span className="nav-arrow">←</span>
+        </Link>
+      )}
+
+      {nextWork && (
+        <Link to={`/work/${nextWork.id}`} className="nav-area nav-area-next" aria-label="次の作品">
+          <span className="nav-arrow">→</span>
+        </Link>
+      )}
     </div>
   );
 }

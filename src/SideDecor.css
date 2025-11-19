@@ -1,0 +1,54 @@
+.side-decor-left {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 60px;
+    height: 100vh;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    mix-blend-mode: difference;
+    color: white;
+}
+
+.side-text {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: var(--font-main);
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    display: flex;
+    gap: 2rem;
+    opacity: 0.6;
+}
+
+.side-decor-right {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 100vh;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    mix-blend-mode: difference;
+}
+
+.scroll-progress {
+    width: 2px;
+    height: 100%;
+    background-color: white;
+    transform-origin: top;
+}
+
+@media (max-width: 768px) {
+
+    .side-decor-left,
+    .side-decor-right {
+        display: none;
+    }
+}

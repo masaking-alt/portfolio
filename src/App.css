@@ -14,14 +14,31 @@ body {
   color: var(--color-text);
   font-family: var(--font-main);
   overflow-x: hidden;
-  cursor: default;
+  cursor: none;
+}
+
+a,
+button,
+input,
+textarea,
+label {
+  cursor: none;
 }
 
 .container {
   max-width: var(--container-width);
   margin: 0 auto;
-  padding: 0 4vw;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
+
+main {
+  flex: 1;
+  width: 100%;
+}
+
+
 
 /* Header */
 .header {
@@ -78,18 +95,47 @@ body {
 }
 
 /* Background Text */
-.bg-text {
+.bg-text-wrapper {
   position: absolute;
-  top: -10%;
-  left: -5%;
-  font-size: 20vw;
-  font-weight: 900;
-  color: rgba(0, 0, 0, 0.02);
-  line-height: 1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   z-index: -1;
+  overflow: hidden;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  /* Center vertically */
+}
+
+.parallax {
+  overflow: hidden;
+  letter-spacing: -2px;
+  line-height: 0.8;
+  margin: 0;
   white-space: nowrap;
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.scroller {
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 15vw;
+  /* Slightly smaller to fit better */
+  display: flex;
+  white-space: nowrap;
+  flex-wrap: nowrap;
+  color: rgba(0, 0, 0, 0.03);
+  /* Subtle color */
   font-family: 'Inter', sans-serif;
+}
+
+.scroller span {
+  display: block;
+  margin-right: 30px;
 }
 
 section {
@@ -145,9 +191,33 @@ section {
   transition: transform 0.5s ease;
 }
 
-/* Staggered Effect: Push even items down */
-.work-item:nth-child(even) {
+/* Staggered Effect: Varied offsets for dynamic layout */
+.work-item-2 {
+  margin-top: 6rem;
+}
+
+.work-item-3 {
+  margin-top: 3rem;
+}
+
+.work-item-4 {
   margin-top: 8rem;
+}
+
+.work-item-5 {
+  margin-top: 2rem;
+}
+
+.work-item-6 {
+  margin-top: 7rem;
+}
+
+.work-item-7 {
+  margin-top: 4rem;
+}
+
+.work-item-8 {
+  margin-top: 9rem;
 }
 
 .work-link {
@@ -159,12 +229,12 @@ section {
 
 .work-image {
   width: 100%;
-  aspect-ratio: 4 / 3;
-  /* Slightly taller for grid */
+  aspect-ratio: 16 / 9;
+  /* Wider aspect ratio */
   overflow: hidden;
   background-color: #f5f5f5;
   margin-bottom: 1.5rem;
-  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .work-image img {
@@ -198,43 +268,48 @@ section {
 
 .work-info {
   position: relative;
+  padding-top: 1rem;
 }
 
 .work-number {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--color-text-light);
+  position: absolute;
+  top: -3rem;
+  left: -1rem;
+  font-size: 8rem;
+  font-weight: 900;
+  color: #f0f0f0;
+  z-index: -1;
+  line-height: 1;
+  font-family: var(--font-main);
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.work-link:hover .work-number {
+  color: #e0e0e0;
+  transform: translateX(10px);
 }
 
 .work-info h3 {
-  font-size: 1.8rem;
-  /* Smaller than before */
-  font-weight: 400;
-  margin: 0 0 1rem 0;
+  font-size: 2rem;
+  margin: 0 0 0.5rem;
+  font-weight: 500;
   line-height: 1.2;
 }
 
-.work-description {
-  font-size: 0.95rem;
-  color: var(--color-text-light);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  display: -webkit-box;
-  line-clamp: 3;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 .view-project {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  position: relative;
+  opacity: 0;
+  transform: translateY(10px);
   display: inline-block;
+  transition: all 0.4s ease;
+}
+
+.work-link:hover .view-project {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .view-project::after {
@@ -307,6 +382,26 @@ section {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
+  justify-content: center;
+  /* Center tags */
+}
+
+.technologies-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.technologies-header h3 {
+  font-size: 2rem;
+  font-weight: 300;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.technologies-header p {
+  font-size: 0.9rem;
+  color: var(--color-text-light);
+  margin: 0;
 }
 
 .tech-tag {

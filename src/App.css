@@ -107,6 +107,10 @@ main {
   display: flex;
   align-items: center;
   /* Center vertically */
+
+  /* Fade out on left and right edges */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
 }
 
 .parallax {
@@ -422,7 +426,6 @@ section {
 #contact {
   text-align: center;
   padding: 10rem 0;
-  background-color: #fafafa;
   margin-bottom: 0;
 }
 
@@ -476,7 +479,7 @@ section {
 }
 
 .footer {
-  background-color: #fafafa;
+  background-color: white;
   text-align: center;
   padding: 2rem;
   color: #ccc;

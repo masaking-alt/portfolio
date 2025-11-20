@@ -8,9 +8,9 @@ export const SideDecor = () => {
         <>
             <div className="side-decor-left">
                 <div className="side-text">
-                    <span>MASAKING PORTFOLIO / 2025</span>
+                    <span>MASAKING PORTFOLIO</span>
                     <span className="separator">///</span>
-                    <span>VIBE CODING & FRONTEND</span>
+                    <span>VIBE CODING , FRONTEND &  EXTENSIONS</span>
                 </div>
             </div>
             <div className="side-decor-right">

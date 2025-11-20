@@ -1,0 +1,204 @@
+.mobile-wrapper {
+    width: 100%;
+    overflow-x: hidden;
+    padding-bottom: 50px;
+}
+
+.mobile-hero {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 2rem;
+    position: relative;
+}
+
+.mobile-hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+.mobile-hero-title {
+    font-size: 3.5rem;
+    font-weight: 100;
+    line-height: 1.1;
+    margin: 0 0 1.5rem 0;
+    letter-spacing: -0.02em;
+}
+
+.mobile-hero-subtitle {
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--color-text-light);
+    line-height: 1.5;
+}
+
+.mobile-section {
+    padding: 4rem 1.5rem;
+    position: relative;
+}
+
+/* Works */
+.mobile-works-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding: 0 0.5rem;
+}
+
+.mobile-work-item {
+    width: 100%;
+}
+
+.mobile-work-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+}
+
+.mobile-work-image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* Square aspect ratio for grid */
+    overflow: hidden;
+    background-color: #f5f5f5;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+}
+
+.mobile-work-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.mobile-work-image--icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border: 1px solid #eee;
+}
+
+.mobile-work-image--icon img {
+    width: auto;
+    height: 50%;
+    object-fit: contain;
+}
+
+.mobile-work-info {
+    position: relative;
+    padding: 0 0.25rem;
+}
+
+.mobile-work-number {
+    font-size: 1.5rem;
+    /* Smaller number for grid */
+    font-weight: 900;
+    color: #fff;
+    position: absolute;
+    top: 0.5rem;
+    /* Inside the image */
+    left: 0.5rem;
+    z-index: 2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    /* Better shadow for contrast */
+    pointer-events: none;
+}
+
+.mobile-work-info h3 {
+    font-size: 0.9rem;
+    /* Smaller title */
+    margin: 0;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mobile-view-project {
+    display: none;
+    /* Hide "View Project" text to save space */
+}
+
+/* About */
+.mobile-about-content {
+    position: relative;
+    z-index: 1;
+}
+
+.mobile-about-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.mobile-about-profile-container {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f0f0f0;
+}
+
+.mobile-about-profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mobile-about-lead {
+    font-size: 1.5rem;
+    font-weight: 300;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.mobile-about-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    color: var(--color-text-light);
+    line-height: 1.8;
+    margin-bottom: 3rem;
+    font-size: 0.95rem;
+}
+
+/* Contact */
+.mobile-contact-content {
+    text-align: center;
+}
+
+.mobile-contact-content p {
+    font-size: 1rem;
+    color: var(--color-text-light);
+    margin-bottom: 1.5rem;
+}
+
+.mobile-email-link {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: black;
+    margin-bottom: 3rem;
+    word-break: break-all;
+}
+
+.mobile-social-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.mobile-social-links a {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: black;
+}

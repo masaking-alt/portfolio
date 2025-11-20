@@ -56,6 +56,24 @@ function WorkDetail() {
           <span className="nav-arrow">→</span>
         </Link>
       )}
+
+      <div className="mobile-nav-bar">
+        {prevWork ? (
+          <Link to={`/work/${prevWork.id}`} className="mobile-nav-item">
+            ← PREV
+          </Link>
+        ) : (
+          <span className="mobile-nav-item disabled">← PREV</span>
+        )}
+        <div className="mobile-nav-divider"></div>
+        {nextWork ? (
+          <Link to={`/work/${nextWork.id}`} className="mobile-nav-item">
+            NEXT →
+          </Link>
+        ) : (
+          <span className="mobile-nav-item disabled">NEXT →</span>
+        )}
+      </div>
     </div>
   );
 }

@@ -3,9 +3,12 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import Lenis from 'lenis';
 import { Cursor } from './Cursor';
 import { SideDecor } from './SideDecor';
+import { useMediaQuery } from './hooks/useMediaQuery';
+import { HamburgerMenu } from './HamburgerMenu';
 
 function Layout() {
   const location = useLocation();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
     // Lenis Initialization
@@ -72,12 +75,16 @@ function Layout() {
       <SideDecor />
       <header className="header">
         <h1 className="name"><Link to="/">まさきんぐ_masaking</Link></h1>
-        <nav className="nav">
-          <Link to="/#hero">Top</Link>
-          <Link to="/#works">Works</Link>
-          <Link to="/#about">About</Link>
-          <Link to="/#contact">Contact</Link>
-        </nav>
+        {!isMobile ? (
+          <nav className="nav">
+            <Link to="/#hero">Top</Link>
+            <Link to="/#works">Works</Link>
+            <Link to="/#about">About</Link>
+            <Link to="/#contact">Contact</Link>
+          </nav>
+        ) : (
+          <HamburgerMenu />
+        )}
       </header>
       <main>
         <Outlet />

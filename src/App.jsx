@@ -7,6 +7,8 @@ import WorkDetail from './WorkDetail';
 import Layout from './Layout';
 import { Reveal } from './Reveal';
 import { ParallaxText } from './ParallaxText';
+import MobileHome from './MobileHome';
+import { useMediaQuery } from './hooks/useMediaQuery';
 
 
 function Home() {
@@ -41,8 +43,8 @@ function Home() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.8 }}
           >
-            Vibe Coding ! <br />
-            Frontend & Extensions Developer
+            Vibe Coding & <br />
+            Frontend Developer
           </motion.p>
         </div>
       </section>
@@ -136,10 +138,12 @@ function Home() {
 }
 
 function App() {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
+        <Route index element={isMobile ? <MobileHome /> : <Home />} />
         <Route path="work/:id" element={<WorkDetail />} />
       </Route>
     </Routes>

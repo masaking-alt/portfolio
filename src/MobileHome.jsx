@@ -54,9 +54,9 @@ function MobileHome() {
                                 <Link to={`/work/${work.id}`} className="mobile-work-link">
                                     <div className={`mobile-work-image${work.imageVariant === "icon" ? " mobile-work-image--icon" : ""}`}>
                                         <img src={work.imageUrl_sp} alt={work.title} />
+                                        <span className="mobile-work-number">{(index + 1).toString().padStart(2, '0')}</span>
                                     </div>
                                     <div className="mobile-work-info">
-                                        <span className="mobile-work-number">{(index + 1).toString().padStart(2, '0')}</span>
                                         <h3>{work.title}</h3>
                                         <span className="mobile-view-project">View Project &rarr;</span>
                                     </div>

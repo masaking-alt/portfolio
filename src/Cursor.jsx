@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useMediaQuery } from "./hooks/useMediaQuery";
 
 export const Cursor = () => {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -61,6 +62,10 @@ export const Cursor = () => {
             opacity: 0,
         }
     };
+
+    const isMobile = useMediaQuery("(max-width: 768px)");
+
+    if (isMobile) return null;
 
     return (
         <>

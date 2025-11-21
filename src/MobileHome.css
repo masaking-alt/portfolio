@@ -65,6 +65,8 @@
     background-color: #f5f5f5;
     margin-bottom: 0.5rem;
     border-radius: 4px;
+    position: relative;
+    /* Added for number positioning */
 }
 
 .mobile-work-image img {
@@ -99,13 +101,24 @@
     font-weight: 900;
     color: #fff;
     position: absolute;
-    top: 0.5rem;
-    /* Inside the image */
-    left: 0.5rem;
-    z-index: 2;
+    top: 0;
+    /* Align to top edge */
+    left: 0;
+    /* Align to left edge */
+    padding: 0.5rem;
+    /* Add padding instead of positioning */
+    z-index: 10;
+    /* Ensure it's on top */
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     /* Better shadow for contrast */
     pointer-events: none;
+    line-height: normal;
+    /* Prevent vertical clipping */
+}
+
+.mobile-work-image--icon .mobile-work-number {
+    color: #333;
+    text-shadow: none;
 }
 
 .mobile-work-info h3 {

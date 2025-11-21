@@ -578,4 +578,19 @@ section {
     font-size: 15vw;
     top: -5%;
   }
+
+  /* Hide Custom Cursor on Mobile */
+  .cursor-dot,
+  .cursor-ring {
+    display: none !important;
+  }
+
+  body,
+  a,
+  button,
+  input,
+  textarea,
+  label {
+    cursor: auto;
+  }
 }

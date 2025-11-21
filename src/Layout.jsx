@@ -23,6 +23,9 @@ function Layout() {
       touchMultiplier: 2,
     });
 
+    // Store Lenis instance globally for access from other components
+    window.lenis = lenis;
+
     function raf(time) {
       lenis.raf(time);
       requestAnimationFrame(raf);
@@ -66,6 +69,7 @@ function Layout() {
 
     return () => {
       lenis.destroy();
+      window.lenis = null;
     };
   }, [location]);
 

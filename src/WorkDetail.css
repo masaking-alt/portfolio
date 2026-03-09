@@ -14,30 +14,13 @@
 
 .work-detail-image {
   width: 100%;
-  max-width: 600px;
+  max-width: 680px;
   height: auto;
   margin: 0 auto 20px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
   box-sizing: border-box;
-}
-
-.work-detail-image--icon {
-  width: 100%;
-  max-width: 320px;
-  padding: 24px;
-  background-color: #fff;
-  object-fit: contain;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  box-sizing: border-box;
-}
-
-.work-detail-image--icon img {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
+  background-color: #f4f1eb;
 }
 
 .work-detail-container h1 {
@@ -159,15 +142,7 @@
   }
 
   .work-detail-image {
-    max-width: min(280px, 70vw);
-    /* Resize image to match icon size */
-  }
-
-  .work-detail-image--icon {
-    padding: 0;
-    max-width: min(280px, 70vw);
-    /* Resize icon image */
-    background-color: transparent;
+    max-width: min(320px, 82vw);
   }
 }
 

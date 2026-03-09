@@ -1,14 +1,13 @@
-import { useEffect } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import './App.css';
-import { works } from './works';
 import WorkDetail from './WorkDetail';
 import Layout from './Layout';
 import { Reveal } from './Reveal';
 import { ParallaxText } from './ParallaxText';
 import MobileHome from './MobileHome';
 import { useMediaQuery } from './hooks/useMediaQuery';
+import WorksSection from './WorksSection';
 
 
 function Home() {
@@ -53,27 +52,7 @@ function Home() {
         <div className="bg-text-wrapper">
           <ParallaxText baseVelocity={2}>WORKS</ParallaxText>
         </div>
-        <div className="works-container">
-          {works.map((work, index) => (
-            <Reveal key={work.id} width="100%" delay={index % 2 === 0 ? 0.2 : 0.4}>
-              <div className={`work-item work-item-${index + 1}`}>
-                <Link to={`/work/${work.id}`} className="work-link">
-                  <div className={`work-image${work.imageVariant === "icon" ? " work-image--icon" : ""}`}>
-                    <picture>
-                      <source media="(max-width: 768px)" srcSet={work.imageUrl_sp} />
-                      <img src={work.imageUrl} alt={work.title} />
-                    </picture>
-                  </div>
-                  <div className="work-info">
-                    <span className="work-number">{(index + 1).toString().padStart(2, '0')}</span>
-                    <h3>{work.title}</h3>
-                    <span className="view-project">View Project &rarr;</span>
-                  </div>
-                </Link>
-              </div>
-            </Reveal>
-          ))}
-        </div>
+        <WorksSection />
       </section>
 
       <section id="about">

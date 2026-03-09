@@ -1,0 +1,111 @@
+.works-grid {
+  max-width: 1520px;
+  margin: 0 auto;
+  padding: 0 10vw;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 36px 28px;
+}
+
+.works-card {
+  min-width: 0;
+}
+
+.works-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.works-card-image-wrap {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  border: 1px solid rgba(28, 25, 22, 0.32);
+  background-color: #f1f1f1;
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+
+.works-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.works-card-body {
+  padding-top: 14px;
+}
+
+.works-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.works-card-category,
+.works-card-stack {
+  min-width: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  color: #7a7a7a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.works-card h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 600;
+  color: #1f1b17;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 3em;
+}
+
+.works-card-link:hover .works-card-image-wrap {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 35px rgba(34, 30, 26, 0.08);
+  border-color: rgba(28, 25, 22, 0.5);
+}
+
+.works-card-link:hover .works-card-image {
+  transform: scale(1.04);
+}
+
+@media (max-width: 1280px) {
+  .works-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding-inline: 8vw;
+  }
+}
+
+@media (max-width: 960px) {
+  .works-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 18px;
+    padding-inline: 5vw;
+  }
+}
+
+@media (max-width: 560px) {
+  .works-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding-inline: 1.5rem;
+  }
+
+  .works-card-body {
+    padding-top: 10px;
+  }
+}

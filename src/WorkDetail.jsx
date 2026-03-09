@@ -38,14 +38,11 @@ function WorkDetail() {
     <div className="work-detail-container">
       <div className="work-content">
         <a href={work.externalUrl} target="_blank" rel="noopener noreferrer">
-          <picture>
-            <source media="(max-width: 768px)" srcSet={work.imageUrl_sp} />
-            <img
-              src={work.imageUrl}
-              alt={work.title}
-              className={`work-detail-image${work.imageVariant === "icon" ? " work-detail-image--icon" : ""}`}
-            />
-          </picture>
+          <img
+            src={work.imageUrl}
+            alt={work.title}
+            className="work-detail-image"
+          />
         </a>
         <a href={work.externalUrl} target="_blank" rel="noopener noreferrer" className="title-link">
           <h1>{work.title}</h1>

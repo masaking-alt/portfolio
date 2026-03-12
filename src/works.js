@@ -16,7 +16,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/mesi-ko.jpeg",
     externalUrl: "https://mesi-ko.vercel.app/",
-    technologies: ["Next.js", "React", "Firebase", "Vercel"],
+    technologies: ["Next.js", "React", "NextAuth", "Vercel"],
   },
   {
     id: 7,
@@ -43,7 +43,7 @@ export const works = [
     category: "Webサイト",
     imageUrl: "/soueiken-hp.jpeg",
     externalUrl: "https://soueiken-hp.pages.dev/",
-    technologies: ["React", "Create React App", "React Router DOM", "Fetch API", "カスタム CSS", "自作 Markdown レンダラー"],
+    technologies: ["React", "Fetch API", "CSS", "自作 Markdown レンダラー"],
   },
   {
     id: 4,
@@ -52,7 +52,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/parttime_shift.jpeg",
     externalUrl: "https://parttime-shift.pages.dev/",
-    technologies: ["React", "TypeScript", "Vite", "Material UI", "Flask", "SQLite", "FullCalendar"],
+    technologies: ["React", "TypeScript", "Vite", "Flask", "SQLite"],
   },
   {
     id: 3,
@@ -61,7 +61,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/memoapp.jpeg",
     externalUrl: "https://memoapp-5rh.pages.dev/",
-    technologies: ["React", "Create React App", "Testing Library", "Jest"],
+    technologies: ["React","Testing Library", "Jest"],
   },
   {
     id: 2,
@@ -70,7 +70,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/todo_app.jpeg",
     externalUrl: "https://todo-app-d6h.pages.dev/",
-    technologies: ["React", "TypeScript", "Create React App", "Jest & React Testing Library", "CSS"],
+    technologies: ["TypeScript", "React", "Testing Library", "CSS"],
   },
   {
     id: 1,

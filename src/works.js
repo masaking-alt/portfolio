@@ -7,7 +7,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/ugomemo.jpeg",
     externalUrl: "https://ugomemo.ugomemo.workers.dev/",
-    technologies: ["Next.js", "React", "Clerk", "Cloudflare Workers"],
+    technologies: ["チーム開発", "Next.js", "React", "Clerk", "Cloudflare Workers"],
   },
   {
     id: 8,
@@ -16,7 +16,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/mesi-ko.jpeg",
     externalUrl: "https://mesi-ko.vercel.app/",
-    technologies: ["Next.js", "React", "NextAuth", "Vercel"],
+    technologies: ["チーム開発", "Next.js", "React", "NextAuth", "Vercel"],
   },
   {
     id: 7,
@@ -43,7 +43,7 @@ export const works = [
     category: "Webサイト",
     imageUrl: "/soueiken-hp.jpeg",
     externalUrl: "https://soueiken-hp.pages.dev/",
-    technologies: ["React", "Fetch API", "CSS", "自作 Markdown レンダラー"],
+    technologies: ["チーム開発", "React", "Fetch API", "CSS", "自作 Markdown レンダラー"],
   },
   {
     id: 4,
@@ -79,6 +79,6 @@ export const works = [
     category: "ゲーム",
     imageUrl: "/gemini_hima.jpeg",
     externalUrl: "https://himatubusi.pages.dev/",
-    technologies: ["HTML", "CSS", "JavaScript"],
+    technologies: ["チーム開発", "HTML", "CSS", "JavaScript"],
   },
 ];

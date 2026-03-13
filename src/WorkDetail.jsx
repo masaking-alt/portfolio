@@ -49,7 +49,7 @@ function WorkDetail() {
         </a>
         <p>{work.description}</p>
 
-        <h3>使用技術</h3>
+        <h3>使用技術等</h3>
         <div className="technologies">
           {work.technologies && work.technologies.map((tech, index) => (
             <span key={index} className="tech-tag">{tech}</span>

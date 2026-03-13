@@ -7,7 +7,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/ugomemo.jpeg",
     externalUrl: "https://ugomemo.ugomemo.workers.dev/",
-    technologies: ["チーム開発", "Next.js", "React", "Clerk", "Cloudflare Workers"],
+    technologies: ["Next.js", "React", "Clerk", "Cloudflare Workers", "Cloudflare D1", "SQLite","チーム開発"],
   },
   {
     id: 8,
@@ -16,7 +16,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/mesi-ko.jpeg",
     externalUrl: "https://mesi-ko.vercel.app/",
-    technologies: ["チーム開発", "Next.js", "React", "NextAuth", "Vercel"],
+    technologies: ["Next.js", "React", "NextAuth", "Vercel", "Neon", "PostgreSQL","チーム開発"],
   },
   {
     id: 7,
@@ -43,7 +43,7 @@ export const works = [
     category: "Webサイト",
     imageUrl: "/soueiken-hp.jpeg",
     externalUrl: "https://soueiken-hp.pages.dev/",
-    technologies: ["チーム開発", "React", "Fetch API", "CSS", "自作 Markdown レンダラー"],
+    technologies: ["React", "Fetch API", "CSS", "自作 Markdown レンダラー","Cloudflare Pages","Firestore","チーム開発"],
   },
   {
     id: 4,
@@ -52,7 +52,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/parttime_shift.jpeg",
     externalUrl: "https://parttime-shift.pages.dev/",
-    technologies: ["React", "TypeScript", "Vite", "Flask", "SQLite"],
+    technologies: ["React", "TypeScript", "Vite", "Flask", "SQLite","Cloudflare Pages","Render"],
   },
   {
     id: 3,
@@ -61,7 +61,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/memoapp.jpeg",
     externalUrl: "https://memoapp-5rh.pages.dev/",
-    technologies: ["React","Testing Library", "Jest"],
+    technologies: ["React","Testing Library", "Jest","Cloudflare Pages"],
   },
   {
     id: 2,
@@ -70,7 +70,7 @@ export const works = [
     category: "Webアプリ",
     imageUrl: "/todo_app.jpeg",
     externalUrl: "https://todo-app-d6h.pages.dev/",
-    technologies: ["TypeScript", "React", "Testing Library", "CSS"],
+    technologies: ["React", "TypeScript","Testing Library","Cloudflare Pages", "CSS"],
   },
   {
     id: 1,
@@ -79,6 +79,6 @@ export const works = [
     category: "ゲーム",
     imageUrl: "/gemini_hima.jpeg",
     externalUrl: "https://himatubusi.pages.dev/",
-    technologies: ["チーム開発", "HTML", "CSS", "JavaScript"],
+    technologies: ["HTML", "CSS", "JavaScript","Cloudflare Pages","チーム開発"],
   },
 ];

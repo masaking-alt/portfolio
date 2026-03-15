@@ -33,20 +33,35 @@ function WorkDetail() {
 
   const prevWork = currentWorkIndex > 0 ? works[currentWorkIndex - 1] : null;
   const nextWork = currentWorkIndex < works.length - 1 ? works[currentWorkIndex + 1] : null;
+  const hasExternalUrl = Boolean(work.externalUrl);
+
+  const imageElement = (
+    <img
+      src={work.imageUrl}
+      alt={work.title}
+      className="work-detail-image"
+    />
+  );
+
+  const titleElement = <h1>{work.title}</h1>;
 
   return (
     <div className="work-detail-container">
       <div className="work-content">
-        <a href={work.externalUrl} target="_blank" rel="noopener noreferrer">
-          <img
-            src={work.imageUrl}
-            alt={work.title}
-            className="work-detail-image"
-          />
-        </a>
-        <a href={work.externalUrl} target="_blank" rel="noopener noreferrer" className="title-link">
-          <h1>{work.title}</h1>
-        </a>
+        {hasExternalUrl ? (
+          <a href={work.externalUrl} target="_blank" rel="noopener noreferrer">
+            {imageElement}
+          </a>
+        ) : (
+          imageElement
+        )}
+        {hasExternalUrl ? (
+          <a href={work.externalUrl} target="_blank" rel="noopener noreferrer" className="title-link">
+            {titleElement}
+          </a>
+        ) : (
+          titleElement
+        )}
         <p>{work.description}</p>
 
         <h3>使用技術等</h3>

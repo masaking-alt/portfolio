@@ -36,8 +36,7 @@ function MobileHome() {
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.5, delay: 0.8 }}
                     >
-                        Vibe Coding & <br />
-                        Frontend Developer
+                        AI-Native Full-Stack Developer
                     </motion.p>
                 </div>
             </section>

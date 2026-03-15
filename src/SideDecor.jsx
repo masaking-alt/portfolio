@@ -10,7 +10,7 @@ export const SideDecor = () => {
                 <div className="side-text">
                     <span>MASAKING PORTFOLIO</span>
                     <span className="separator">///</span>
-                    <span>VIBE CODING , FRONTEND &  EXTENSIONS</span>
+                    <span>AI-Native Full-Stack Developer</span>
                 </div>
             </div>
             <div className="side-decor-right">

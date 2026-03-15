@@ -1,6 +1,15 @@
 
 export const works = [
   {
+    id: 10,
+    title: "Marple",
+    description: "Marp形式のスライドをブラウザ上で直感的に編集できるWebアプリです。Markdown編集とスライドプレビューを同時に確認でき、AIによるスライド編集支援、gif風バージョン管理機能、PDF/PPTX形式でのエクスポートまで一貫して行えます。VSCode拡張やローカル環境構築なしで、プレゼン資料作成を効率化できる点が特徴です。",
+    category: "Webアプリ",
+    imageUrl: "/marple.jpeg",
+    externalUrl: "https://marple.hackuniv.club/",
+    technologies: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Marp Core", "OpenAI API", "Clerk", "Cloudflare Workers", "Cloudflare D1","チーム開発"],
+  },
+  {
     id: 9,
     title: "Ugomemo",
     description: "アイデアをノードとして配置し、つなげながら発想を広げるためのコラボレーションツール。直感的なキャンバス、AIによる視点提案、学生・クリエイター・プランナー向けのユースケースを1ページで伝えるランディング構成にしています。",

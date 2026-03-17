@@ -75,7 +75,7 @@ function Home() {
               <p>昔からプログラミングに興味があり、AIを利用することでそのハードルが下がったため、web制作に挑戦しています。ユーザーにとって魅力的で使いやすいサイトを作れるようになりたいです。</p>
             </Reveal>
             <Reveal delay={0.4}>
-              <p>好きなゲームはモンハンで、特に3DSのシリーズが好きです。好きなアーティストはVaundy。アニメ、マンガ、映画を見るのも好きです。</p>
+              <p>好きなゲームはモンハンで、特に3DSのシリーズが好きです。好きなアーティストはVaundy。アニメやマンガを見るのも好きです。</p>
             </Reveal>
           </div>
           <Reveal delay={0.5}>
@@ -105,7 +105,7 @@ function Home() {
             <a href="mailto:banbenjianggui@gmail.com" className="email-link">banbenjianggui@gmail.com</a>
             <div className="social-links">
               <a href="https://www.instagram.com/masa.ki8904?igsh=b3hqMjd6aHdnazJ5" target="_blank" rel="noopener noreferrer">Instagram</a>
-              <a href="https://x.com/KZOzame1?s=09" target="_blank" rel="noopener noreferrer">X (Twitter)</a>
+              <a href="https://x.com/masaking_alt" target="_blank" rel="noopener noreferrer">X (Twitter)</a>
               <a href="https://bere.al/masaki9876" target="_blank" rel="noopener noreferrer">BeReal</a>
             </div>
           </Reveal>

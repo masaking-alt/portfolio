@@ -385,6 +385,40 @@ function Composer() {
   );
 }
 
+function WorkCenterContent({ 作品, 差分一覧 }) {
+  return (
+    <>
+      <div>
+        <div className="mx-auto max-w-[680px] overflow-hidden rounded-xl">
+          <img src={作品.imageUrl} alt={作品.title} className="h-auto max-h-[360px] w-full object-contain" />
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <div className="mb-2 text-[12px] tracking-[0.08em] text-white/38">{作品.category}</div>
+        <h2 className="text-[24px] font-semibold tracking-[-0.03em] text-white/92">{作品.title}</h2>
+        <p className="mt-4 text-[13.5px] leading-[1.95] text-white/68">{作品.description}</p>
+      </div>
+
+      <div className="mt-6">
+        <div className="mb-3 text-[12px] tracking-[0.08em] text-white/38">使用技術</div>
+        <div className="flex flex-wrap gap-2.5">
+          {作品.technologies.map((技術) => (
+            <span
+              key={技術}
+              className="rounded-full border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/70"
+            >
+              {技術}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <ChangeSummary 差分一覧={差分一覧} />
+    </>
+  );
+}
+
 function CenterColumn({ 作品, 差分一覧, scrollRef }) {
   const 会話 = 会話内容(作品);
 
@@ -405,13 +439,21 @@ function CenterColumn({ 作品, 差分一覧, scrollRef }) {
             </div>
 
             <p className="text-[14px] font-medium leading-7 text-white/86">{会話.answerTitle}</p>
-            {会話.paragraphs.map((段落) => (
-              <p key={段落} className="mt-3 pr-10 text-[13.5px] leading-[1.9] text-white/68">
-                {段落}
-              </p>
-            ))}
+            {作品 ? (
+              <div className="mt-5">
+                <WorkCenterContent 作品={作品} 差分一覧={差分一覧} />
+              </div>
+            ) : (
+              <>
+                {会話.paragraphs.map((段落) => (
+                  <p key={段落} className="mt-3 pr-10 text-[13.5px] leading-[1.9] text-white/68">
+                    {段落}
+                  </p>
+                ))}
 
-            <ChangeSummary 差分一覧={差分一覧} />
+                <ChangeSummary 差分一覧={差分一覧} />
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -458,8 +500,8 @@ function AddOnlyImageDiff({ 作品 }) {
         1
       </div>
       <div className="bg-[#132418] px-4 py-4">
-        <div className="overflow-hidden rounded-lg border border-emerald-400/10 bg-black/20">
-          <img src={作品.imageUrl} alt={作品.title} className="aspect-[16/9] w-full object-cover" />
+        <div className="mx-auto aspect-square max-w-[420px] overflow-hidden rounded-lg border border-emerald-400/10 bg-black/20 p-3">
+          <img src={作品.imageUrl} alt={作品.title} className="h-full w-full object-contain" />
         </div>
         <div className="mt-3 font-mono text-[11.5px] text-[#89d39a]">+ プレビュー画像を追加</div>
       </div>

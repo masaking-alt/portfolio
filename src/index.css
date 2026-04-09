@@ -3,7 +3,7 @@
 :root {
   color-scheme: dark;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Hiragino Sans", "Noto Sans JP", sans-serif;
-  background: #0f1011;
+  background: #0e0e0e;
 }
 
 html,
@@ -16,7 +16,7 @@ body,
 
 body {
   margin: 0;
-  background: #0f1011;
+  background: #0e0e0e;
 }
 
 a {
@@ -27,4 +27,31 @@ a {
 button,
 a {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom Scrollbar for inner components */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 9999px;
+}
+
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
 }

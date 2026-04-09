@@ -18,7 +18,6 @@ import {
   Search,
   Settings,
   SquarePen,
-  SquareTerminal,
 } from 'lucide-react';
 import { createElement, useEffect, useRef, useState } from 'react';
 import { Link, Route, Routes, useParams } from 'react-router-dom';
@@ -333,15 +332,10 @@ function Composer() {
   return (
     <div className="px-5 pb-6 pt-2 lg:px-10">
       <div className="mx-auto max-w-[820px]">
-        <div className="inline-flex items-center gap-2 rounded-t-xl border border-b-0 border-white/[0.08] bg-[#2a2a2b] px-3 py-1.5 text-[11.5px] text-white/52">
-          <SquareTerminal className="h-3.5 w-3.5" />
-          <span>1個のターミナルを実行しています</span>
-        </div>
-
         <div className="rounded-[22px] border border-white/[0.08] bg-[#2d2d30] px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
           <div className="min-h-[72px] px-1 pt-1 text-[14px] text-white/26">フォローアップの変更を求める</div>
 
-          <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3">
+          <div className="mt-3 flex items-center justify-between pt-3">
             <div className="flex items-center gap-2 text-[11.5px] text-white/50">
               <button type="button" className="rounded-md p-1 hover:bg-white/[0.06]">+</button>
               <span>GPT-5.4</span>
@@ -364,7 +358,7 @@ function Composer() {
         <div className="mt-2 flex items-center justify-between px-2 text-[11.5px] text-white/30">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
-              <SquareTerminal className="h-3 w-3" />
+              <FolderOpen className="h-3 w-3" />
               ローカル環境
               <ChevronDown className="h-3 w-3" />
             </span>

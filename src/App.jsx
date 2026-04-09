@@ -23,10 +23,10 @@ import { Link, Route, Routes, useParams } from 'react-router-dom';
 import { works } from './works';
 
 const navigationItems = [
-  { label: '新しいスレッド', icon: SquarePen },
+  { label: 'New Thread', icon: SquarePen },
   { label: 'Search', icon: Search },
-  { label: 'スキルとアプリ', icon: LayoutGrid },
-  { label: 'オートメーション', icon: Clock3 },
+  { label: 'Skills & Apps', icon: LayoutGrid },
+  { label: 'Automation', icon: Clock3 },
 ];
 
 const homeProject = {
@@ -43,13 +43,14 @@ function padTwoDigits(value) {
 
 function formatCurrentTimestamp() {
   const now = new Date();
-  const dayLabel = ['日', '月', '火', '水', '木', '金', '土'][now.getDay()];
-  return `${now.getMonth() + 1}月${now.getDate()}日(${dayLabel}) ${padTwoDigits(now.getHours())}:${padTwoDigits(now.getMinutes())}`;
+  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][now.getDay()];
+  const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()];
+  return `${weekday}, ${month} ${now.getDate()} ${padTwoDigits(now.getHours())}:${padTwoDigits(now.getMinutes())}`;
 }
 
 function formatThreadTime(index) {
-  const labels = ['27分', '1時間', '3時間', '昨日', '3日前', '1か月', '1か月'];
-  return labels[index] ?? '1か月';
+  const labels = ['27m', '1h', '3h', 'Yesterday', '3d ago', '1mo', '1mo'];
+  return labels[index] ?? '1mo';
 }
 
 function splitTextLines(text, width = 26) {
@@ -184,7 +185,7 @@ function LeftSidebar({ selectedWorkId, isHomeSelected }) {
       </div>
 
       <div className="mt-3 flex items-center justify-between px-4 text-[12px] text-white/36">
-        <span>スレッド</span>
+        <span>Threads</span>
         <div className="flex items-center gap-1.5">
           <Filter className="h-3.5 w-3.5" />
           <LayoutGrid className="h-3.5 w-3.5" />
@@ -211,7 +212,7 @@ function LeftSidebar({ selectedWorkId, isHomeSelected }) {
               プロジェクト概要
             </div>
           </div>
-          <span className={`pt-0.5 text-[10.5px] ${isHomeSelected ? 'text-white/42' : 'text-white/28'}`}>57分</span>
+          <span className={`pt-0.5 text-[10.5px] ${isHomeSelected ? 'text-white/42' : 'text-white/28'}`}>57m</span>
         </Link>
 
         {works.map((work, index) => {
@@ -244,7 +245,7 @@ function LeftSidebar({ selectedWorkId, isHomeSelected }) {
           className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left text-[13px] text-white/68 transition hover:bg-white/[0.045] hover:text-white"
         >
           <Settings className="h-4 w-4 text-white/52" />
-          <span>設定</span>
+          <span>Settings</span>
         </button>
       </div>
     </aside>
@@ -293,7 +294,7 @@ function TopBar({ title, addedCount }) {
           className="ml-1 flex items-center gap-1.5 rounded-md border border-white/[0.05] bg-white/[0.04] px-2.5 py-1 text-[11.5px] text-white/76 hover:bg-white/[0.06]"
         >
           <GitCommitHorizontal className="h-3.5 w-3.5 text-white/44" />
-          <span>コミット</span>
+          <span>Commit</span>
           <ChevronDown className="h-3 w-3 text-white/34" />
         </button>
         <span className="ml-2 font-mono text-[11.5px] text-[#3fb950]">+{addedCount}</span>
@@ -309,11 +310,11 @@ function ChangeSummary({ diffEntries }) {
     <div className="mt-8 overflow-hidden rounded-xl border border-white/[0.06] bg-[#141414]">
       <div className="flex items-center justify-between border-b border-white/[0.05] px-4 py-3 text-[12.5px]">
         <div className="flex items-center gap-2 text-white/70">
-          <span>{diffEntries.length}個のファイルが変更されました</span>
+          <span>{diffEntries.length} files changed</span>
           <span className="font-mono text-[#3fb950]">+{totalAddedLines}</span>
         </div>
         <button type="button" className="text-white/38 hover:text-white/70">
-          元に戻す
+          Revert
         </button>
       </div>
 
@@ -332,14 +333,14 @@ function Composer() {
     <div className="px-5 pb-6 pt-2 lg:px-10">
       <div className="mx-auto max-w-[820px]">
         <div className="rounded-[22px] border border-white/[0.08] bg-[#2d2d30] px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
-          <div className="min-h-[72px] px-1 pt-1 text-[14px] text-white/26">フォローアップの変更を求める</div>
+          <div className="min-h-[72px] px-1 pt-1 text-[14px] text-white/26">Ask for follow-up changes</div>
 
           <div className="mt-3 flex items-center justify-between pt-3">
             <div className="flex items-center gap-2 text-[11.5px] text-white/50">
               <button type="button" className="rounded-md p-1 hover:bg-white/[0.06]">+</button>
               <span>GPT-5.4</span>
               <ChevronDown className="h-3 w-3" />
-              <span className="border-l border-white/[0.06] pl-3">非常に高い</span>
+              <span className="border-l border-white/[0.06] pl-3">Very High</span>
               <ChevronDown className="h-3 w-3" />
             </div>
 
@@ -358,12 +359,12 @@ function Composer() {
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <FolderOpen className="h-3 w-3" />
-              ローカル環境
+              Local environment
               <ChevronDown className="h-3 w-3" />
             </span>
             <span className="flex items-center gap-1">
               <Settings className="h-3 w-3" />
-              デフォルト権限
+              Default permissions
               <ChevronDown className="h-3 w-3" />
             </span>
           </div>
@@ -427,7 +428,7 @@ function CenterColumn({ work, diffEntries, scrollRef }) {
 
           <div className="mt-8">
             <div className="mb-3 flex items-center gap-1.5 text-[11.5px] text-white/38">
-              <span>25m 55s作業しました</span>
+              <span>Worked for 25m 55s</span>
               <ChevronRight className="h-3 w-3" />
             </div>
 
@@ -510,7 +511,7 @@ function RightColumn({ work, diffEntries, scrollRef }) {
       <div className="flex h-10 items-center justify-between border-b border-white/[0.05] px-3">
         <div className="flex items-center gap-1.5 text-white/80">
           <ChevronRight className="h-3.5 w-3.5 text-white/38" />
-          <span className="text-[12.5px] font-medium">ステージ済み</span>
+          <span className="text-[12.5px] font-medium">Staged</span>
           <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-white/48">{diffEntries.length}</span>
           <ChevronDown className="h-3.5 w-3.5 text-white/32" />
         </div>

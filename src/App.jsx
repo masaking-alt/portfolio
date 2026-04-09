@@ -10,27 +10,26 @@ import {
   Filter,
   FolderOpen,
   GitCommitHorizontal,
-  Image as ImageIcon,
-  LayoutGrid,
   Mic,
   MoreHorizontal,
   Play,
   Search,
   Settings,
   SquarePen,
+  LayoutGrid,
 } from 'lucide-react';
 import { createElement, useEffect, useRef, useState } from 'react';
 import { Link, Route, Routes, useParams } from 'react-router-dom';
 import { works } from './works';
 
-const ナビ項目 = [
+const navigationItems = [
   { label: '新しいスレッド', icon: SquarePen },
   { label: 'Search', icon: Search },
   { label: 'スキルとアプリ', icon: LayoutGrid },
   { label: 'オートメーション', icon: Clock3 },
 ];
 
-const ホーム概要 = {
+const homeProject = {
   title: 'portfolio',
   category: 'Workspace',
   description:
@@ -38,31 +37,31 @@ const ホーム概要 = {
   technologies: ['React', 'Vite', 'Tailwind CSS', 'React Router', 'lucide-react', 'UI Design'],
 };
 
-function 二桁(値) {
-  return String(値).padStart(2, '0');
+function padTwoDigits(value) {
+  return String(value).padStart(2, '0');
 }
 
-function 現在時刻表示() {
-  const 現在 = new Date();
-  const 曜日 = ['日', '月', '火', '水', '木', '金', '土'][現在.getDay()];
-  return `${現在.getMonth() + 1}月${現在.getDate()}日(${曜日}) ${二桁(現在.getHours())}:${二桁(現在.getMinutes())}`;
+function formatCurrentTimestamp() {
+  const now = new Date();
+  const dayLabel = ['日', '月', '火', '水', '木', '金', '土'][now.getDay()];
+  return `${now.getMonth() + 1}月${now.getDate()}日(${dayLabel}) ${padTwoDigits(now.getHours())}:${padTwoDigits(now.getMinutes())}`;
 }
 
-function スレッド時刻(index) {
-  const 表示 = ['27分', '1時間', '3時間', '昨日', '3日前', '1か月', '1か月'];
-  return 表示[index] ?? '1か月';
+function formatThreadTime(index) {
+  const labels = ['27分', '1時間', '3時間', '昨日', '3日前', '1か月', '1か月'];
+  return labels[index] ?? '1か月';
 }
 
-function 文字列を行分割(文字列, 幅 = 26) {
-  const 行一覧 = [];
-  for (let index = 0; index < 文字列.length; index += 幅) {
-    行一覧.push(文字列.slice(index, index + 幅));
+function splitTextLines(text, width = 26) {
+  const lines = [];
+  for (let index = 0; index < text.length; index += width) {
+    lines.push(text.slice(index, index + width));
   }
-  return 行一覧;
+  return lines;
 }
 
-function ホーム差分データ() {
-  const 技術一覧 = Array.from(new Set(works.flatMap((作品) => 作品.technologies))).slice(0, 8);
+function buildHomeDiffEntries() {
+  const technologies = Array.from(new Set(works.flatMap((work) => work.technologies))).slice(0, 8);
 
   return [
     {
@@ -90,37 +89,37 @@ function ホーム差分データ() {
     {
       kind: 'text',
       fileName: 'stack.json',
-      addedLines: 技術一覧.map((技術) => `"${技術}"`),
+      addedLines: technologies.map((technology) => `"${technology}"`),
     },
   ];
 }
 
-function 作品差分データ(作品) {
+function buildWorkDiffEntries(work) {
   return [
     {
       kind: 'image',
-      fileName: 作品.imageUrl.split('/').pop() ?? 'preview.png',
+      fileName: work.imageUrl.split('/').pop() ?? 'preview.png',
       addedLines: ['preview updated'],
     },
     {
       kind: 'text',
       fileName: 'description.md',
-      addedLines: 文字列を行分割(作品.description, 24),
+      addedLines: splitTextLines(work.description, 24),
     },
     {
       kind: 'text',
       fileName: 'technologies.json',
-      addedLines: 作品.technologies.map((技術) => `"${技術}"`),
+      addedLines: work.technologies.map((technology) => `"${technology}"`),
     },
   ];
 }
 
-function 追加行数合計(差分一覧) {
-  return 差分一覧.reduce((合計, 項目) => 合計 + 項目.addedLines.length, 0);
+function getAddedLineCount(diffEntries) {
+  return diffEntries.reduce((total, entry) => total + entry.addedLines.length, 0);
 }
 
-function 会話内容(作品) {
-  if (!作品) {
+function getConversationContent(work) {
+  if (!work) {
     return {
       question: 'このプロジェクトについて説明して',
       answerTitle: 'このプロジェクトについて説明します。',
@@ -132,27 +131,27 @@ function 会話内容(作品) {
   }
 
   return {
-    question: `${作品.title} について説明して`,
-    answerTitle: `${作品.title} について説明します。`,
+    question: `${work.title} について説明して`,
+    answerTitle: `${work.title} について説明します。`,
     paragraphs: [
-      作品.description,
-      `${作品.category} として公開している作品で、右側のステージ済み欄にはプレビュー画像、説明文、使用技術を追加-only の diff としてまとめています。外部リンクや技術スタックの確認をしやすい構成です。`,
+      work.description,
+      `${work.category} として公開している作品で、右側のステージ済み欄にはプレビュー画像、説明文、使用技術を追加-only の diff としてまとめています。外部リンクや技術スタックの確認をしやすい構成です。`,
     ],
   };
 }
 
-function カラム幅を補正(幅, コンテナ幅) {
-  const 最小左 = 220;
-  const 最小中央 = 520;
-  const 最小右 = 420;
-  const 最大左 = Math.max(最小左, コンテナ幅 - 最小中央 - 最小右);
-  const 左 = Math.min(Math.max(幅.left, 最小左), 最大左);
-  const 最大右 = Math.max(最小右, コンテナ幅 - 左 - 最小中央);
-  const 右 = Math.min(Math.max(幅.right, 最小右), 最大右);
-  return { left: 左, right: 右 };
+function clampColumnWidths(widths, containerWidth) {
+  const minLeft = 220;
+  const minCenter = 520;
+  const minRight = 420;
+  const maxLeft = Math.max(minLeft, containerWidth - minCenter - minRight);
+  const left = Math.min(Math.max(widths.left, minLeft), maxLeft);
+  const maxRight = Math.max(minRight, containerWidth - left - minCenter);
+  const right = Math.min(Math.max(widths.right, minRight), maxRight);
+  return { left, right };
 }
 
-function LeftSidebar({ 選択作品ID, ホーム選択中 }) {
+function LeftSidebar({ selectedWorkId, isHomeSelected }) {
   return (
     <aside className="relative order-4 flex min-h-0 flex-col bg-[#141415] lg:order-none lg:col-start-1 lg:row-[1/3] lg:border-r lg:border-white/[0.05]">
       <div className="flex h-12 items-center justify-between px-3.5">
@@ -172,7 +171,7 @@ function LeftSidebar({ 選択作品ID, ホーム選択中 }) {
       </div>
 
       <div className="px-2.5 pb-1">
-        {ナビ項目.map(({ label, icon }) => (
+        {navigationItems.map(({ label, icon }) => (
           <button
             key={label}
             type="button"
@@ -201,39 +200,39 @@ function LeftSidebar({ 選択作品ID, ホーム選択中 }) {
         <Link
           to="/"
           className={`ml-[22px] flex items-start justify-between rounded-xl px-3 py-2 transition ${
-            ホーム選択中
+            isHomeSelected
               ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
               : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
           }`}
         >
           <div className="min-w-0 pr-2">
             <div className="truncate text-[12.5px] font-medium">このプロジェクトについて説明して</div>
-            <div className={`mt-0.5 truncate text-[11px] ${ホーム選択中 ? 'text-white/42' : 'text-white/28'}`}>
+            <div className={`mt-0.5 truncate text-[11px] ${isHomeSelected ? 'text-white/42' : 'text-white/28'}`}>
               プロジェクト概要
             </div>
           </div>
-          <span className={`pt-0.5 text-[10.5px] ${ホーム選択中 ? 'text-white/42' : 'text-white/28'}`}>57分</span>
+          <span className={`pt-0.5 text-[10.5px] ${isHomeSelected ? 'text-white/42' : 'text-white/28'}`}>57分</span>
         </Link>
 
-        {works.map((作品, index) => {
-          const 選択中 = 選択作品ID === 作品.id;
+        {works.map((work, index) => {
+          const isSelected = selectedWorkId === work.id;
           return (
             <Link
-              key={作品.id}
-              to={`/work/${作品.id}`}
+              key={work.id}
+              to={`/work/${work.id}`}
               className={`ml-[22px] flex items-start justify-between rounded-xl px-3 py-2 transition ${
-                選択中
+                isSelected
                   ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
                   : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
               }`}
             >
               <div className="min-w-0 pr-2">
-                <div className="truncate text-[12.5px] font-medium">{作品.title}</div>
-                <div className={`mt-0.5 truncate text-[11px] ${選択中 ? 'text-white/42' : 'text-white/28'}`}>
-                  {作品.category}
+                <div className="truncate text-[12.5px] font-medium">{work.title}</div>
+                <div className={`mt-0.5 truncate text-[11px] ${isSelected ? 'text-white/42' : 'text-white/28'}`}>
+                  {work.category}
                 </div>
               </div>
-              <span className={`pt-0.5 text-[10.5px] ${選択中 ? 'text-white/42' : 'text-white/28'}`}>{スレッド時刻(index)}</span>
+              <span className={`pt-0.5 text-[10.5px] ${isSelected ? 'text-white/42' : 'text-white/28'}`}>{formatThreadTime(index)}</span>
             </Link>
           );
         })}
@@ -268,17 +267,17 @@ function MacMenuBar() {
       <div className="flex items-center gap-3">
         <Search className="h-3.5 w-3.5" />
         <span className="inline-flex h-4 min-w-4 items-center justify-center rounded border border-white/20 px-1 text-[10px] font-semibold">A</span>
-        <span>{現在時刻表示()}</span>
+        <span>{formatCurrentTimestamp()}</span>
       </div>
     </div>
   );
 }
 
-function TopBar({ タイトル, 追加数 }) {
+function TopBar({ title, addedCount }) {
   return (
     <header className="order-1 flex h-10 items-center justify-between border-b border-white/[0.05] bg-[#181818] px-4 lg:order-none lg:col-[2/4] lg:row-start-1">
       <div className="flex min-w-0 items-center gap-2 text-[12.5px] text-white/84">
-        <span className="truncate font-medium">{タイトル}</span>
+        <span className="truncate font-medium">{title}</span>
         <MoreHorizontal className="h-3.5 w-3.5 shrink-0 text-white/34" />
       </div>
 
@@ -297,31 +296,31 @@ function TopBar({ タイトル, 追加数 }) {
           <span>コミット</span>
           <ChevronDown className="h-3 w-3 text-white/34" />
         </button>
-        <span className="ml-2 font-mono text-[11.5px] text-[#3fb950]">+{追加数}</span>
+        <span className="ml-2 font-mono text-[11.5px] text-[#3fb950]">+{addedCount}</span>
       </div>
     </header>
   );
 }
 
-function ChangeSummary({ 差分一覧 }) {
-  const 合計 = 追加行数合計(差分一覧);
+function ChangeSummary({ diffEntries }) {
+  const totalAddedLines = getAddedLineCount(diffEntries);
 
   return (
     <div className="mt-8 overflow-hidden rounded-xl border border-white/[0.06] bg-[#141414]">
       <div className="flex items-center justify-between border-b border-white/[0.05] px-4 py-3 text-[12.5px]">
         <div className="flex items-center gap-2 text-white/70">
-          <span>{差分一覧.length}個のファイルが変更されました</span>
-          <span className="font-mono text-[#3fb950]">+{合計}</span>
+          <span>{diffEntries.length}個のファイルが変更されました</span>
+          <span className="font-mono text-[#3fb950]">+{totalAddedLines}</span>
         </div>
         <button type="button" className="text-white/38 hover:text-white/70">
           元に戻す
         </button>
       </div>
 
-      {差分一覧.map((項目) => (
-        <div key={項目.fileName} className="flex items-center justify-between border-t border-white/[0.05] px-4 py-3 first:border-t-0">
-          <span className="font-mono text-[12px] text-white/74">{項目.fileName}</span>
-          <span className="font-mono text-[11.5px] text-[#3fb950]">+{項目.addedLines.length}</span>
+      {diffEntries.map((entry) => (
+        <div key={entry.fileName} className="flex items-center justify-between border-t border-white/[0.05] px-4 py-3 first:border-t-0">
+          <span className="font-mono text-[12px] text-white/74">{entry.fileName}</span>
+          <span className="font-mono text-[11.5px] text-[#3fb950]">+{entry.addedLines.length}</span>
         </div>
       ))}
     </div>
@@ -379,42 +378,42 @@ function Composer() {
   );
 }
 
-function WorkCenterContent({ 作品, 差分一覧 }) {
+function WorkCenterContent({ work, diffEntries }) {
   return (
     <>
       <div>
         <div className="mx-auto max-w-[680px] overflow-hidden rounded-xl">
-          <img src={作品.imageUrl} alt={作品.title} className="h-auto max-h-[360px] w-full object-contain" />
+          <img src={work.imageUrl} alt={work.title} className="h-auto max-h-[360px] w-full object-contain" />
         </div>
       </div>
 
       <div className="mt-6">
-        <div className="mb-2 text-[12px] tracking-[0.08em] text-white/38">{作品.category}</div>
-        <h2 className="text-[24px] font-semibold tracking-[-0.03em] text-white/92">{作品.title}</h2>
-        <p className="mt-4 text-[13.5px] leading-[1.95] text-white/68">{作品.description}</p>
+        <div className="mb-2 text-[12px] tracking-[0.08em] text-white/38">{work.category}</div>
+        <h2 className="text-[24px] font-semibold tracking-[-0.03em] text-white/92">{work.title}</h2>
+        <p className="mt-4 text-[13.5px] leading-[1.95] text-white/68">{work.description}</p>
       </div>
 
       <div className="mt-6">
         <div className="mb-3 text-[12px] tracking-[0.08em] text-white/38">使用技術</div>
         <div className="flex flex-wrap gap-2.5">
-          {作品.technologies.map((技術) => (
+          {work.technologies.map((technology) => (
             <span
-              key={技術}
+              key={technology}
               className="rounded-full border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/70"
             >
-              {技術}
+              {technology}
             </span>
           ))}
         </div>
       </div>
 
-      <ChangeSummary 差分一覧={差分一覧} />
+      <ChangeSummary diffEntries={diffEntries} />
     </>
   );
 }
 
-function CenterColumn({ 作品, 差分一覧, scrollRef }) {
-  const 会話 = 会話内容(作品);
+function CenterColumn({ work, diffEntries, scrollRef }) {
+  const conversation = getConversationContent(work);
 
   return (
     <section className="order-2 flex min-h-0 flex-col bg-[#111112] lg:order-none lg:col-start-2 lg:row-start-2 lg:border-r lg:border-white/[0.05]">
@@ -422,7 +421,7 @@ function CenterColumn({ 作品, 差分一覧, scrollRef }) {
         <div className="mx-auto max-w-[820px]">
           <div className="ml-auto flex max-w-[560px] flex-col items-end">
             <div className="rounded-2xl bg-[#2e2e31] px-4 py-3 text-[13.5px] leading-[1.6] text-white/92 shadow-[0_12px_28px_rgba(0,0,0,0.24)]">
-              {会話.question}
+              {conversation.question}
             </div>
           </div>
 
@@ -432,20 +431,20 @@ function CenterColumn({ 作品, 差分一覧, scrollRef }) {
               <ChevronRight className="h-3 w-3" />
             </div>
 
-            <p className="text-[14px] font-medium leading-7 text-white/86">{会話.answerTitle}</p>
-            {作品 ? (
+            <p className="text-[14px] font-medium leading-7 text-white/86">{conversation.answerTitle}</p>
+            {work ? (
               <div className="mt-5">
-                <WorkCenterContent 作品={作品} 差分一覧={差分一覧} />
+                <WorkCenterContent work={work} diffEntries={diffEntries} />
               </div>
             ) : (
               <>
-                {会話.paragraphs.map((段落) => (
-                  <p key={段落} className="mt-3 pr-10 text-[13.5px] leading-[1.9] text-white/68">
-                    {段落}
+                {conversation.paragraphs.map((paragraph) => (
+                  <p key={paragraph} className="mt-3 pr-10 text-[13.5px] leading-[1.9] text-white/68">
+                    {paragraph}
                   </p>
                 ))}
 
-                <ChangeSummary 差分一覧={差分一覧} />
+                <ChangeSummary diffEntries={diffEntries} />
               </>
             )}
           </div>
@@ -457,37 +456,37 @@ function CenterColumn({ 作品, 差分一覧, scrollRef }) {
   );
 }
 
-function DiffHeader({ 名前, 追加数 }) {
+function DiffHeader({ name, addedCount }) {
   return (
     <div className="flex items-center justify-between border-b border-white/[0.05] bg-[#171717] px-3 py-2.5">
       <div className="flex items-center gap-2 font-mono text-[11.5px] text-white/78">
         <ChevronDown className="h-3.5 w-3.5 text-white/34" />
-        <span>{名前}</span>
+        <span>{name}</span>
       </div>
       <div className="flex items-center gap-3">
-        <span className="font-mono text-[11.5px] text-[#3fb950]">+{追加数}</span>
+        <span className="font-mono text-[11.5px] text-[#3fb950]">+{addedCount}</span>
         <MoreHorizontal className="h-3.5 w-3.5 text-white/34" />
       </div>
     </div>
   );
 }
 
-function AddOnlyTextDiff({ 行一覧 }) {
+function AddOnlyTextDiff({ lines }) {
   return (
     <div className="font-mono text-[12px] leading-[1.65]">
-      {行一覧.map((行, index) => (
-        <div key={`${行}-${index}`} className="grid grid-cols-[44px_minmax(0,1fr)]">
+      {lines.map((line, index) => (
+        <div key={`${line}-${index}`} className="grid grid-cols-[44px_minmax(0,1fr)]">
           <div className="border-r border-white/[0.04] bg-[#102117] px-2 py-1.5 text-right text-white/28">
             {index + 1}
           </div>
-          <div className="bg-[#15321f] px-3 py-1.5 text-[#89d39a]">+ {行}</div>
+          <div className="bg-[#15321f] px-3 py-1.5 text-[#89d39a]">+ {line}</div>
         </div>
       ))}
     </div>
   );
 }
 
-function AddOnlyImageDiff({ 作品 }) {
+function AddOnlyImageDiff({ work }) {
   return (
     <div className="grid grid-cols-[44px_minmax(0,1fr)]">
       <div className="border-r border-white/[0.04] bg-[#102117] px-2 py-3 text-right font-mono text-[11.5px] text-white/28">
@@ -495,7 +494,7 @@ function AddOnlyImageDiff({ 作品 }) {
       </div>
       <div className="bg-[#132418] px-4 py-4">
         <div className="mx-auto aspect-square max-w-[420px] overflow-hidden rounded-lg border border-emerald-400/10 bg-black/20 p-3">
-          <img src={作品.imageUrl} alt={作品.title} className="h-full w-full object-contain" />
+          <img src={work.imageUrl} alt={work.title} className="h-full w-full object-contain" />
         </div>
         <div className="mt-3 font-mono text-[11.5px] text-[#89d39a]">+ プレビュー画像を追加</div>
       </div>
@@ -503,8 +502,8 @@ function AddOnlyImageDiff({ 作品 }) {
   );
 }
 
-function RightColumn({ 作品, 差分一覧, scrollRef }) {
-  const 合計 = 追加行数合計(差分一覧);
+function RightColumn({ work, diffEntries, scrollRef }) {
+  const totalAddedLines = getAddedLineCount(diffEntries);
 
   return (
     <aside className="order-3 flex min-h-0 flex-col bg-[#121212] lg:order-none lg:col-start-3 lg:row-start-2">
@@ -512,12 +511,12 @@ function RightColumn({ 作品, 差分一覧, scrollRef }) {
         <div className="flex items-center gap-1.5 text-white/80">
           <ChevronRight className="h-3.5 w-3.5 text-white/38" />
           <span className="text-[12.5px] font-medium">ステージ済み</span>
-          <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-white/48">{差分一覧.length}</span>
+          <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[10px] text-white/48">{diffEntries.length}</span>
           <ChevronDown className="h-3.5 w-3.5 text-white/32" />
         </div>
 
         <div className="flex items-center gap-1.5">
-          <span className="font-mono text-[11.5px] text-[#3fb950]">+{合計}</span>
+          <span className="font-mono text-[11.5px] text-[#3fb950]">+{totalAddedLines}</span>
           <button type="button" className="rounded p-1 text-white/34 hover:bg-white/[0.05] hover:text-white/70">
             <Copy className="h-3.5 w-3.5" />
           </button>
@@ -526,10 +525,10 @@ function RightColumn({ 作品, 差分一覧, scrollRef }) {
 
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto px-4 py-4 custom-scrollbar">
         <div className="space-y-4">
-          {差分一覧.map((項目) => (
-            <section key={項目.fileName} className="overflow-hidden rounded-xl border border-white/[0.06] bg-[#111111]">
-              <DiffHeader 名前={項目.fileName} 追加数={項目.addedLines.length} />
-              {項目.kind === 'image' ? <AddOnlyImageDiff 作品={作品} /> : <AddOnlyTextDiff 行一覧={項目.addedLines} />}
+          {diffEntries.map((entry) => (
+            <section key={entry.fileName} className="overflow-hidden rounded-xl border border-white/[0.06] bg-[#111111]">
+              <DiffHeader name={entry.fileName} addedCount={entry.addedLines.length} />
+              {entry.kind === 'image' ? <AddOnlyImageDiff work={work} /> : <AddOnlyTextDiff lines={entry.addedLines} />}
             </section>
           ))}
         </div>
@@ -540,25 +539,25 @@ function RightColumn({ 作品, 差分一覧, scrollRef }) {
 
 function WorkspaceScreen() {
   const { id } = useParams();
-  const 選択作品 = works.find((作品) => 作品.id === Number(id)) ?? null;
-  const ホーム選択中 = !選択作品;
-  const 差分一覧 = 選択作品 ? 作品差分データ(選択作品) : ホーム差分データ();
-  const 追加数 = 追加行数合計(差分一覧);
-  const タイトル = ホーム選択中
+  const selectedWork = works.find((work) => work.id === id) ?? null;
+  const isHomeSelected = !selectedWork;
+  const diffEntries = selectedWork ? buildWorkDiffEntries(selectedWork) : buildHomeDiffEntries();
+  const addedCount = getAddedLineCount(diffEntries);
+  const title = isHomeSelected
     ? 'Codexアプリ風にポートフォリオ改修 portfolio'
-    : `${選択作品.title} の説明更新 portfolio`;
+    : `${selectedWork.title} の説明更新 portfolio`;
 
-  const コンテナ参照 = useRef(null);
-  const 中央スクロール参照 = useRef(null);
-  const 右スクロール参照 = useRef(null);
-  const [コンテナ幅, setコンテナ幅] = useState(0);
-  const [ドラッグ中, setドラッグ中] = useState(null);
-  const [デスクトップ, setデスクトップ] = useState(() => window.innerWidth >= 1024);
-  const [カラム幅, setカラム幅] = useState(() => {
+  const containerRef = useRef(null);
+  const centerScrollRef = useRef(null);
+  const rightScrollRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [draggingDivider, setDraggingDivider] = useState(null);
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
+  const [columnWidths, setColumnWidths] = useState(() => {
     try {
-      const 保存値 = JSON.parse(window.localStorage.getItem('portfolio-column-widths') ?? 'null');
-      if (保存値 && typeof 保存値.left === 'number' && typeof 保存値.right === 'number') {
-        return 保存値;
+      const savedWidths = JSON.parse(window.localStorage.getItem('portfolio-column-widths') ?? 'null');
+      if (savedWidths && typeof savedWidths.left === 'number' && typeof savedWidths.right === 'number') {
+        return savedWidths;
       }
     } catch {
       return { left: 268, right: 864 };
@@ -567,73 +566,73 @@ function WorkspaceScreen() {
   });
 
   useEffect(() => {
-    const リサイズ監視 = new ResizeObserver(([entry]) => {
-      setコンテナ幅(entry.contentRect.width);
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
     });
-    if (コンテナ参照.current) {
-      リサイズ監視.observe(コンテナ参照.current);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
     }
-    return () => リサイズ監視.disconnect();
+    return () => resizeObserver.disconnect();
   }, []);
 
   useEffect(() => {
-    const リサイズ時 = () => setデスクトップ(window.innerWidth >= 1024);
-    window.addEventListener('resize', リサイズ時);
-    return () => window.removeEventListener('resize', リサイズ時);
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
-    if (!デスクトップ || コンテナ幅 === 0) {
+    if (!isDesktop || containerWidth === 0) {
       return;
     }
-    setカラム幅((現在) => カラム幅を補正(現在, コンテナ幅));
-  }, [コンテナ幅, デスクトップ]);
+    setColumnWidths((currentWidths) => clampColumnWidths(currentWidths, containerWidth));
+  }, [containerWidth, isDesktop]);
 
   useEffect(() => {
-    window.localStorage.setItem('portfolio-column-widths', JSON.stringify(カラム幅));
-  }, [カラム幅]);
+    window.localStorage.setItem('portfolio-column-widths', JSON.stringify(columnWidths));
+  }, [columnWidths]);
 
   useEffect(() => {
-    if (!デスクトップ || !ドラッグ中) {
+    if (!isDesktop || !draggingDivider) {
       return undefined;
     }
 
-    const 移動時 = (event) => {
-      if (!コンテナ参照.current) {
+    const handlePointerMove = (event) => {
+      if (!containerRef.current) {
         return;
       }
-      const rect = コンテナ参照.current.getBoundingClientRect();
-      if (ドラッグ中 === 'left') {
-        const 新しい左幅 = event.clientX - rect.left;
-        setカラム幅((現在) => カラム幅を補正({ ...現在, left: 新しい左幅 }, rect.width));
+      const rect = containerRef.current.getBoundingClientRect();
+      if (draggingDivider === 'left') {
+        const nextLeftWidth = event.clientX - rect.left;
+        setColumnWidths((currentWidths) => clampColumnWidths({ ...currentWidths, left: nextLeftWidth }, rect.width));
       } else {
-        const 新しい右幅 = rect.right - event.clientX;
-        setカラム幅((現在) => カラム幅を補正({ ...現在, right: 新しい右幅 }, rect.width));
+        const nextRightWidth = rect.right - event.clientX;
+        setColumnWidths((currentWidths) => clampColumnWidths({ ...currentWidths, right: nextRightWidth }, rect.width));
       }
     };
 
-    const 終了時 = () => setドラッグ中(null);
+    const handlePointerUp = () => setDraggingDivider(null);
 
-    window.addEventListener('pointermove', 移動時);
-    window.addEventListener('pointerup', 終了時);
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
     return () => {
-      window.removeEventListener('pointermove', 移動時);
-      window.removeEventListener('pointerup', 終了時);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [ドラッグ中, デスクトップ]);
+  }, [draggingDivider, isDesktop]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (中央スクロール参照.current) {
-      中央スクロール参照.current.scrollTop = 0;
+    if (centerScrollRef.current) {
+      centerScrollRef.current.scrollTop = 0;
     }
-    if (右スクロール参照.current) {
-      右スクロール参照.current.scrollTop = 0;
+    if (rightScrollRef.current) {
+      rightScrollRef.current.scrollTop = 0;
     }
   }, [id]);
 
-  const グリッドスタイル = デスクトップ
-    ? { gridTemplateColumns: `${カラム幅.left}px minmax(0, 1fr) ${カラム幅.right}px` }
+  const gridStyle = isDesktop
+    ? { gridTemplateColumns: `${columnWidths.left}px minmax(0, 1fr) ${columnWidths.right}px` }
     : undefined;
 
   return (
@@ -641,36 +640,36 @@ function WorkspaceScreen() {
       <div className="flex h-full w-full flex-col">
         <MacMenuBar />
 
-        <div ref={コンテナ参照} className="relative min-h-0 flex-1 overflow-auto lg:overflow-hidden">
+        <div ref={containerRef} className="relative min-h-0 flex-1 overflow-auto lg:overflow-hidden">
           <div
             className="grid h-full w-full grid-cols-1 auto-rows-max lg:grid-cols-[268px_minmax(0,1fr)_864px] lg:grid-rows-[40px_minmax(0,1fr)]"
-            style={グリッドスタイル}
+            style={gridStyle}
           >
-            <LeftSidebar 選択作品ID={選択作品?.id ?? null} ホーム選択中={ホーム選択中} />
-            <TopBar タイトル={タイトル} 追加数={追加数} />
-            <CenterColumn 作品={選択作品} 差分一覧={差分一覧} scrollRef={中央スクロール参照} />
-            <RightColumn 作品={選択作品 ?? { ...ホーム概要, imageUrl: '/profile.jpg' }} 差分一覧={差分一覧} scrollRef={右スクロール参照} />
+            <LeftSidebar selectedWorkId={selectedWork?.id ?? null} isHomeSelected={isHomeSelected} />
+            <TopBar title={title} addedCount={addedCount} />
+            <CenterColumn work={selectedWork} diffEntries={diffEntries} scrollRef={centerScrollRef} />
+            <RightColumn work={selectedWork ?? { ...homeProject, imageUrl: '/profile.jpg' }} diffEntries={diffEntries} scrollRef={rightScrollRef} />
           </div>
 
-          {デスクトップ && コンテナ幅 > 0 ? (
+          {isDesktop && containerWidth > 0 ? (
             <>
               <div
-                style={{ left: `${カラム幅.left}px` }}
+                style={{ left: `${columnWidths.left}px` }}
                 className="absolute top-10 bottom-0 z-30 hidden w-3 -translate-x-1/2 cursor-col-resize lg:block"
                 onPointerDown={(event) => {
                   event.preventDefault();
-                  setドラッグ中('left');
+                  setDraggingDivider('left');
                 }}
               >
                 <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/[0.05]" />
                 <span className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-transparent transition hover:bg-white/[0.16]" />
               </div>
               <div
-                style={{ left: `${コンテナ幅 - カラム幅.right}px` }}
+                style={{ left: `${containerWidth - columnWidths.right}px` }}
                 className="absolute top-10 bottom-0 z-30 hidden w-3 -translate-x-1/2 cursor-col-resize lg:block"
                 onPointerDown={(event) => {
                   event.preventDefault();
-                  setドラッグ中('right');
+                  setDraggingDivider('right');
                 }}
               >
                 <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/[0.05]" />

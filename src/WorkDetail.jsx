@@ -6,25 +6,23 @@ import './WorkDetail.css';
 
 function WorkDetail() {
   const { id } = useParams();
+
   useEffect(() => {
-    // Force scroll to top using Lenis if available, otherwise use native scroll
     const scrollToTop = () => {
       if (window.lenis) {
-        // Use Lenis scrollTo for smooth scroll library compatibility
         window.lenis.scrollTo(0, { immediate: true });
       } else {
-        // Fallback to native scroll
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
       }
     };
 
-    // Execute immediately and also after a short delay to handle any layout shifts
     scrollToTop();
     const timeoutId = setTimeout(scrollToTop, 10);
 
     return () => clearTimeout(timeoutId);
   }, [id]);
-  const currentWorkIndex = works.findIndex(work => work.id === parseInt(id));
+
+  const currentWorkIndex = works.findIndex((work) => work.id === id);
   const work = works[currentWorkIndex];
 
   if (!work) {
@@ -66,8 +64,8 @@ function WorkDetail() {
 
         <h3>使用技術等</h3>
         <div className="technologies">
-          {work.technologies && work.technologies.map((tech, index) => (
-            <span key={index} className="tech-tag">{tech}</span>
+          {work.technologies && work.technologies.map((tech) => (
+            <span key={tech} className="tech-tag">{tech}</span>
           ))}
         </div>
       </div>

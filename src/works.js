@@ -1,7 +1,7 @@
 
 export const works = [
   {
-    id: 10,
+    id: 'marple',
     title: "Marple",
     description: "Marp形式のスライドをブラウザ上で直感的に編集できるWebアプリです。Markdown編集とスライドプレビューを同時に確認でき、AIによるスライド編集支援、gif風バージョン管理機能、PDF/PPTX形式でのエクスポートまで一貫して行えます。VSCode拡張やローカル環境構築なしで、プレゼン資料作成を効率化できる点が特徴です。",
     category: "Webアプリ",
@@ -10,7 +10,7 @@ export const works = [
     technologies: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Marp Core", "OpenAI API", "Clerk", "Cloudflare Workers", "Cloudflare D1","チーム開発"],
   },
   {
-    id: 9,
+    id: 'ugomemo',
     title: "Ugomemo",
     description: "アイデアをノードとして配置し、つなげながら発想を広げるためのコラボレーションツール。直感的なキャンバス、AIによる視点提案、学生・クリエイター・プランナー向けのユースケースを1ページで伝えるランディング構成にしています。",
     category: "Webアプリ",
@@ -19,7 +19,7 @@ export const works = [
     technologies: ["Next.js", "React", "Clerk", "Cloudflare Workers", "Cloudflare D1", "SQLite","チーム開発"],
   },
   {
-    id: 8,
+    id: 'mesi-ko',
     title: "MESI-KO",
     description: "ごはんの予定調整に特化した日程調整アプリ。月間カレンダーから日付ごとのイベント作成へ進め、参加候補数や回答率をサイドパネルで確認できます。招待コード参加やログイン導線も備え、少人数の予定を軽くまとめられる構成にしました。",
     category: "Webアプリ",
@@ -28,7 +28,7 @@ export const works = [
     technologies: ["Next.js", "React", "NextAuth", "Vercel", "Neon", "PostgreSQL","チーム開発"],
   },
   {
-    id: 7,
+    id: 'selection-charcount',
     title: "Selection Charcount",
     description: "右クリックメニューから呼び出せる選択文字数カウンター。選択中テキストをコンテキストメニューイベントで受け取り、余分な空白や絵文字を除外した上で文字数を計算し、画面右下に浮遊パネルとして描画します。Service Worker ベースの background と scripting API を使って任意ページにインジェクトできるので、Web 上のライティングやレビューで即座にカウントできます。",
     category: "Chrome拡張",
@@ -37,7 +37,7 @@ export const works = [
     technologies: ["Chrome Extension (Manifest V3)", "JavaScript", "Chrome Scripting API"],
   },
   {
-    id: 6,
+    id: 'moodle-enhancer',
     title: "Moodle Enhancer for Kochi University",
     description: "高知大学 Moodle を快適に使うための Chrome 拡張。ダッシュボードやコース画面をダークテーマで再構成し、課題・イベントを色分けカードで強調。リソースを自動収集する「資料」タブやメディア保存ボタン、クイズ画面の視認性改善など、学習体験を底上げする施策をコンテンツスクリプトでまとめて提供しています。",
     category: "Chrome拡張",
@@ -46,7 +46,7 @@ export const works = [
     technologies: ["Chrome Extension (Manifest V3)", "JavaScript", "Content Script", "CSS"],
   },
   {
-    id: 5,
+    id: 'soueiken-hp',
     title: "総合映像研究会ホームページ",
     description: "高知大学・総合映像研究会の公式サイトです。サークルの雰囲気を一気に伝えるヒーローセクションやサイドバー、活動予定・BBS・コンタクトなどの複数セクションを整備し、Markdown で管理する活動レポートをトップの一覧と詳細ページに分離して運用できる構成にしています。",
     category: "Webサイト",
@@ -55,7 +55,7 @@ export const works = [
     technologies: ["React", "Fetch API", "CSS", "自作 Markdown レンダラー","Cloudflare Pages","Firestore","チーム開発"],
   },
   {
-    id: 4,
+    id: 'part-time-shift',
     title: "Part-time Shift",
     description: "スマホに最適化されたフルスタックのシフト管理アプリ。日付と勤務時間を登録すると、ダッシュボードで次の勤務や今月の労働時間・給与見込みを自動集計。カレンダー表示や csv エクスポートにも対応し、自分の予定をまとめて管理できます。",
     category: "Webアプリ",
@@ -64,7 +64,7 @@ export const works = [
     technologies: ["React", "TypeScript", "Vite", "Flask", "SQLite","Cloudflare Pages","Render"],
   },
   {
-    id: 3,
+    id: 'memo-pad',
     title: "Memo Pad",
     description: "このメモ帳アプリは、シンプルな操作でメモを作成・編集できるのはもちろん、Firebase 認証を活用して端末をまたいだ同期まで自動で行ってくれるクラウド対応メモツールです。メールアドレスを使わずにユーザー名でログインでき、さらにワンクリックの Google ログインにも対応。ログインすると異なるデバイス間でリアルタイムにメモが反映されるため、クリップボードとしても使うことができます。軽快な UI に加え、安心の認証と自動バックアップ機能を備えた、日常使いにぴったりの Web メモアプリです。",
     category: "Webアプリ",
@@ -73,7 +73,7 @@ export const works = [
     technologies: ["React","Testing Library", "Jest","Cloudflare Pages"],
   },
   {
-    id: 2,
+    id: 'todo-app',
     title: "Todo App",
     description: "シンプルなTodoアプリ。非常にシンプルながら欲しい機能は揃っています。フィルター機能も搭載し、全てのタスク、未完了のタスク、完了済みのタスクを簡単に切り替えられます。",
     category: "Webアプリ",
@@ -82,7 +82,7 @@ export const works = [
     technologies: ["React", "TypeScript","Testing Library","Cloudflare Pages", "CSS"],
   },
   {
-    id: 1,
+    id: 'gemini-summer-boredom-collection',
     title: "Gemini謹製 夏のひまつぶしコレクション",
     description: "夏休みといえば？そう、暇。とにかく暇。その暇潰しの一助となるサイト。数多くのミニゲームを遊ぶことができます。楽しさを求めず、ただ時間をつぶしたい人向け。本当にしょうもないゲームをたくさん制作しました。",
     category: "ゲーム",

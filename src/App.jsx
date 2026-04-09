@@ -50,6 +50,30 @@ const contactContent = {
   ],
 };
 
+function buildTopDiffEntries() {
+  return [
+    {
+      kind: 'text',
+      fileName: 'README.md',
+      addedLines: [
+        '# portfolio',
+        '',
+        'AIネイティブなWebアプリとChrome拡張を中心に制作しているポートフォリオです。',
+        'works, about, contact の各スレッドから内容を切り替えられます。',
+      ],
+    },
+    {
+      kind: 'text',
+      fileName: 'overview.md',
+      addedLines: [
+        '- works: 制作した作品一覧',
+        '- about: 自己紹介とこのサイトについて',
+        '- contact: メールとSNSリンク',
+      ],
+    },
+  ];
+}
+
 function padTwoDigits(value) {
   return String(value).padStart(2, '0');
 }
@@ -192,6 +216,19 @@ function getThreadState(threadType, selectedWork) {
     };
   }
 
+  if (threadType === 'top') {
+    return {
+      title: 'top portfolio',
+      question: 'このポートフォリオについて教えて',
+      answerTitle: 'ポートフォリオの概要です。',
+      paragraphs: [
+        'このポートフォリオでは、works / about / contact のスレッドごとに内容を切り替えられます。',
+        '左のスレッドから作品一覧、自己紹介、連絡先に移動できます。',
+      ],
+      diffEntries: buildTopDiffEntries(),
+    };
+  }
+
   return {
     title: 'works portfolio',
     question: '制作した作品を見せて',
@@ -236,6 +273,7 @@ function ThreadGroup({ label, isActive, isOpen, onToggle, children }) {
 
 function LeftSidebar({ activeThreadType, selectedWorkId }) {
   const [openGroups, setOpenGroups] = useState(() => ({
+    top: true,
     works: true,
     about: activeThreadType === 'about',
     contact: activeThreadType === 'contact',
@@ -295,10 +333,23 @@ function LeftSidebar({ activeThreadType, selectedWorkId }) {
       </div>
 
       <div className="mt-2 flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-3 custom-scrollbar">
-        <div className="mb-1 flex items-center gap-2 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/86">
-          <FolderOpen className="h-4 w-4 text-white/46" />
-          <span>portfolio</span>
-        </div>
+        <ThreadGroup
+          label="TOP"
+          isActive={activeThreadType === 'top'}
+          isOpen={openGroups.top}
+          onToggle={() => toggleGroup('top')}
+        >
+          <Link
+            to="/"
+            className={`ml-[32px] flex min-w-0 items-center rounded-lg px-3 py-1.5 transition ${
+              activeThreadType === 'top'
+                ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
+                : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
+            }`}
+          >
+            <div className="truncate text-[12.5px] font-medium">overview</div>
+          </Link>
+        </ThreadGroup>
 
         <ThreadGroup
           label="works"
@@ -454,15 +505,15 @@ function Composer() {
   return (
     <div className="px-5 pb-6 pt-2 lg:px-10">
       <div className="mx-auto max-w-[820px]">
-        <div className="rounded-[22px] border border-white/[0.08] bg-[#2d2d30] px-4 py-3 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
-          <div className="min-h-[72px] px-1 pt-1 text-[14px] text-white/26">Ask for follow-up changes</div>
+        <div className="rounded-[22px] border border-white/[0.08] bg-[#2d2d30] px-4 py-2.5 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
+          <div className="min-h-[52px] px-1 pt-0.5 text-[14px] text-white/26">Ask for follow-up changes</div>
 
-          <div className="mt-3 flex items-center justify-between pt-3">
+          <div className="mt-2 flex items-center justify-between pt-2">
             <div className="flex items-center gap-2 text-[11.5px] text-white/50">
               <button type="button" className="rounded-md p-1 hover:bg-white/[0.06]">+</button>
               <span>GPT-5.4</span>
               <ChevronDown className="h-3 w-3" />
-              <span className="border-l border-white/[0.06] pl-3">Very High</span>
+              <span className="border-l border-white/[0.06] pl-3">Extra High</span>
               <ChevronDown className="h-3 w-3" />
             </div>
 
@@ -957,7 +1008,7 @@ function WorkspaceScreen({ threadType = 'works' }) {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<WorkspaceScreen threadType="works" />} />
+      <Route path="/" element={<WorkspaceScreen threadType="top" />} />
       <Route path="/works" element={<WorkspaceScreen threadType="works" />} />
       <Route path="/work/:id" element={<WorkspaceScreen threadType="works" />} />
       <Route path="/about" element={<WorkspaceScreen threadType="about" />} />

@@ -269,9 +269,102 @@ function getModeLabel(displayMode) {
   return 'Terminal standby';
 }
 
-function WindowShell({ title, subtitle, statusLabel, actions, active = false, className = '', bodyClassName = '', children }) {
+function clampValue(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function getMaximizedFrame(viewportWidth, viewportHeight) {
+  const margin = 18;
+  const top = 56;
+  return {
+    x: margin,
+    y: top,
+    width: Math.max(320, viewportWidth - margin * 2),
+    height: Math.max(260, viewportHeight - top - margin),
+    isMaximized: true,
+  };
+}
+
+function clampWindowFrame(frame, viewportWidth, viewportHeight) {
+  const margin = 18;
+  const top = 56;
+  const width = Math.min(frame.width, Math.max(320, viewportWidth - margin * 2));
+  const height = Math.min(frame.height, Math.max(260, viewportHeight - top - margin));
+  return {
+    ...frame,
+    width,
+    height,
+    x: clampValue(frame.x, margin, Math.max(margin, viewportWidth - width - margin)),
+    y: clampValue(frame.y, top, Math.max(top, viewportHeight - height - margin)),
+  };
+}
+
+function getDesktopWindowFrames(viewportWidth, viewportHeight, mode) {
+  const terminalLargeWidth = Math.min(viewportWidth - 56, 1180);
+  const terminalLargeHeight = Math.min(viewportHeight - 110, 760);
+  const centeredTerminal = {
+    x: Math.max(18, Math.round((viewportWidth - terminalLargeWidth) / 2)),
+    y: Math.max(64, Math.round((viewportHeight - terminalLargeHeight) / 2) - 10),
+    width: terminalLargeWidth,
+    height: terminalLargeHeight,
+    isMaximized: false,
+  };
+
+  const terminalCompact = clampWindowFrame(
+    {
+      x: 24,
+      y: 78,
+      width: Math.min(460, viewportWidth * 0.3),
+      height: Math.min(380, viewportHeight * 0.44),
+      isMaximized: false,
+    },
+    viewportWidth,
+    viewportHeight,
+  );
+
+  const appLarge = clampWindowFrame(
+    {
+      x: Math.max(180, Math.round(viewportWidth * 0.18)),
+      y: 104,
+      width: Math.min(viewportWidth - 64, 1180),
+      height: Math.min(viewportHeight - 138, 760),
+      isMaximized: false,
+    },
+    viewportWidth,
+    viewportHeight,
+  );
+
+  if (mode === 'app') {
+    return {
+      terminal: terminalCompact,
+      app: appLarge,
+    };
+  }
+
+  return {
+    terminal: centeredTerminal,
+    app: appLarge,
+  };
+}
+
+function WindowShell({
+  title,
+  subtitle,
+  statusLabel,
+  actions,
+  active = false,
+  className = '',
+  bodyClassName = '',
+  onWindowPointerDown,
+  onHeaderPointerDown,
+  onToggleMaximize,
+  canMaximize = false,
+  isMaximized = false,
+  children,
+}) {
   return (
     <section
+      onPointerDown={onWindowPointerDown}
       className={`relative overflow-hidden rounded-[28px] border bg-[#0d1017]/90 backdrop-blur-xl ${
         active
           ? 'border-white/16 shadow-[0_28px_90px_rgba(0,0,0,0.48)]'
@@ -280,12 +373,42 @@ function WindowShell({ title, subtitle, statusLabel, actions, active = false, cl
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_42%)]" />
 
-      <div className="relative flex h-12 items-center justify-between border-b border-white/[0.08] px-4">
+      <div
+        onPointerDown={onHeaderPointerDown}
+        className={`relative flex h-12 items-center justify-between border-b border-white/[0.08] px-4 ${
+          onHeaderPointerDown ? 'cursor-grab active:cursor-grabbing' : ''
+        }`}
+      >
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+            <button
+              type="button"
+              aria-label="close window"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+              className="h-3 w-3 rounded-full bg-[#ff5f57] opacity-80"
+            />
+            <button
+              type="button"
+              aria-label="minimize window"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+              className="h-3 w-3 rounded-full bg-[#febc2e] opacity-80"
+            />
+            <button
+              type="button"
+              aria-label={isMaximized ? 'restore window' : 'maximize window'}
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggleMaximize?.();
+              }}
+              className={`flex h-3 w-3 items-center justify-center rounded-full transition ${
+                canMaximize ? 'bg-[#28c840] hover:brightness-110' : 'bg-[#28c840] opacity-80'
+              }`}
+            >
+              {canMaximize ? <span className="h-[5px] w-[5px] rounded-[1px] bg-black/30" /> : null}
+            </button>
           </div>
 
           <div className="min-w-0">
@@ -353,117 +476,334 @@ function DesktopMenuBar({ displayMode }) {
   );
 }
 
-function DesktopDock({ displayMode, onSelectMode }) {
-  const dockItems = [
-    { id: 'idle', label: 'Terminal' },
-    { id: 'cli', label: 'Masaking CLI' },
-    { id: 'app', label: 'Masaking App' },
-  ];
+function TerminalCommandLine({ command }) {
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px]">
+      <span className="text-[#5d7792]">visitor@portfolio</span>
+      <span className="text-[#3fe0aa]">%</span>
+      <span className="text-[#d9e9ff]">{command}</span>
+    </div>
+  );
+}
+
+function CliTerminalBody({ threadType, selectedWork, threadState }) {
+  const routeLabel = getRouteLabel(threadType, selectedWork);
+  const aggregateTechnologies = Array.from(new Set(works.flatMap((work) => work.technologies))).slice(0, 12);
+  const technologies = selectedWork
+    ? selectedWork.technologies
+    : threadType === 'about'
+      ? aboutContent.technologies
+      : aggregateTechnologies;
 
   return (
-    <div className="pointer-events-none absolute bottom-4 left-1/2 z-40 -translate-x-1/2">
-      <div className="pointer-events-auto flex items-center gap-2 rounded-[24px] border border-white/[0.1] bg-[#0b0f16]/78 px-3 py-2 shadow-[0_18px_48px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-        {dockItems.map((item) => {
-          const isActive = item.id === displayMode;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onSelectMode(item.id)}
-              className={`flex min-w-[94px] flex-col items-center rounded-2xl border px-3 py-2 text-center transition ${
-                isActive
-                  ? 'border-cyan-300/30 bg-cyan-300/12 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.08)]'
-                  : 'border-white/[0.06] bg-white/[0.03] text-white/62 hover:bg-white/[0.06] hover:text-white/86'
-              }`}
+    <div className="flex min-h-0 flex-1 flex-col bg-[#060a10]">
+      <div className="flex h-10 items-center justify-between border-b border-[#16202c] px-4 font-mono text-[11.5px] text-[#657d96]">
+        <span>/Users/user/development/website/portfolio</span>
+        <span>{threadState.diffEntries.length} staged previews</span>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-auto p-5 font-mono text-[12.5px] leading-6 custom-scrollbar">
+        <TerminalCommandLine command="masaking" />
+        <div className="mt-1 text-[#788fa7]">session attached to {routeLabel}</div>
+
+        <TerminalCommandLine command="ls sections" />
+        <div className="mt-2 flex flex-wrap gap-2">
+          <Link to="/" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
+            open top
+          </Link>
+          <Link to="/works" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
+            open works
+          </Link>
+          <Link to="/about" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
+            open about
+          </Link>
+          <Link to="/contact" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
+            open contact
+          </Link>
+        </div>
+
+        <TerminalCommandLine command={selectedWork ? `open works/${selectedWork.id}` : `open ${threadType}`} />
+        <div className="mt-3 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+          <div className="text-[#d9e9ff]">{threadState.answerTitle}</div>
+          <div className="mt-3 space-y-3 text-[#8da4bb]">
+            {threadState.paragraphs.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
+        </div>
+
+        {!selectedWork && threadType === 'works' ? (
+          <div className="mt-4 overflow-hidden rounded-2xl border border-[#16202c] bg-[#0c121a]">
+            {works.map((work) => (
+              <Link
+                key={work.id}
+                to={`/work/${work.id}`}
+                className="flex items-center justify-between border-t border-[#13202d] px-4 py-3 first:border-t-0 transition hover:bg-white/[0.03]"
+              >
+                <div>
+                  <div className="text-[#d9e9ff]">{work.title}</div>
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">{work.category}</div>
+                </div>
+                <span className="text-[#72baf1]">open</span>
+              </Link>
+            ))}
+          </div>
+        ) : null}
+
+        {selectedWork ? (
+          <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_240px]">
+            <a
+              href={selectedWork.externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="overflow-hidden rounded-2xl border border-[#16202c] bg-[#0c121a] p-3"
             >
-              <span className="text-[12px] font-medium">{item.label}</span>
-              <span className="mt-1 text-[10px] uppercase tracking-[0.14em] text-white/34">
-                {item.id === 'idle' ? 'launcher' : item.id}
-              </span>
-            </button>
-          );
-        })}
+              <img src={selectedWork.imageUrl} alt={selectedWork.title} className="aspect-[16/10] w-full rounded-xl object-cover" />
+            </a>
+
+            <div className="rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+              <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">technologies</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedWork.technologies.map((technology) => (
+                  <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
+                    {technology}
+                  </span>
+                ))}
+              </div>
+              <a
+                href={selectedWork.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex rounded-full border border-[#1e4969] bg-[#0f2132] px-3 py-1.5 text-[#d9f7ff] transition hover:bg-[#15324a]"
+              >
+                xdg-open preview
+              </a>
+            </div>
+          </div>
+        ) : null}
+
+        {!selectedWork && threadType === 'about' ? (
+          <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+            <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">stack --list</div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {aboutContent.technologies.map((technology) => (
+                <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
+                  {technology}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {!selectedWork && threadType === 'contact' ? (
+          <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+            <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">network --show</div>
+            <a href={`mailto:${contactContent.email}`} className="mt-3 block text-[#d9f7ff] transition hover:text-white">
+              {contactContent.email}
+            </a>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {contactContent.links.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4] transition hover:text-white"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {!selectedWork && threadType === 'top' ? (
+          <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+            <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">available technologies</div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {aggregateTechnologies.map((technology) => (
+                <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
+                  {technology}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {!selectedWork && threadType !== 'contact' && threadType !== 'about' && threadType !== 'top' ? (
+          <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+            <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">stack --list</div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {technologies.map((technology) => (
+                <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
+                  {technology}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        <TerminalCommandLine command="git diff --staged --stat" />
+        <div className="mt-3 grid gap-3 md:grid-cols-2">
+          {threadState.diffEntries.map((entry) => (
+            <div key={entry.fileName} className="rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+              <div className="flex items-center justify-between gap-3">
+                <span className="truncate text-[#d9e9ff]">{entry.fileName}</span>
+                <span className="text-[#41d599]">+{entry.addedLines.length}</span>
+              </div>
+              <div className="mt-2 text-[#7088a1]">
+                {entry.kind === 'image' ? 'image preview staged' : entry.addedLines.slice(0, 3).join(' / ')}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-function LauncherTerminalWindow({ threadType, selectedWork, displayMode, onSelectMode }) {
+function LauncherTerminalWindow({
+  threadType,
+  selectedWork,
+  threadState,
+  displayMode,
+  terminalCommand,
+  terminalLog,
+  terminalError,
+  onTerminalCommandChange,
+  onTerminalSubmit,
+  shellProps = {},
+}) {
   const routeLabel = getRouteLabel(threadType, selectedWork);
-  const modeOptions = [
-    {
-      id: 'cli',
-      command: './launch masaking-cli',
-      description: 'コマンド履歴ベースで閲覧',
-    },
-    {
-      id: 'app',
-      command: 'open -a "Masaking App"',
-      description: 'GUIワークスペースで閲覧',
-    },
-  ];
 
   return (
     <WindowShell
       title="terminal"
-      subtitle="runtime selector"
-      statusLabel={displayMode === 'idle' ? 'waiting' : 'linked'}
-      active={displayMode === 'idle'}
+      subtitle={displayMode === 'cli' ? `Masaking CLI / ${routeLabel}` : 'runtime selector'}
+      statusLabel={displayMode === 'cli' ? 'running' : displayMode === 'app' ? 'linked' : 'waiting'}
+      active
       className="flex h-full min-h-0 flex-col"
       bodyClassName="flex-1 min-h-0"
+      canMaximize
+      {...shellProps}
     >
-      <div className="flex h-full min-h-0 flex-col bg-[#081018] p-4 font-mono text-[12px] leading-6 text-[#9ab0c6]">
-        <div className="space-y-1">
-          <div className="text-[#d6e7ff]">Last login: {formatCurrentTimestamp()} on portfolio.local</div>
-          <div>connect target ........ portfolio://masaking</div>
-          <div>content route ........ {routeLabel}</div>
-          <div>workspace state ..... {getModeLabel(displayMode)}</div>
+      {displayMode === 'cli' ? (
+        <div className="flex h-full min-h-0 flex-col">
+          <CliTerminalBody threadType={threadType} selectedWork={selectedWork} threadState={threadState} />
+          <form onSubmit={onTerminalSubmit} className="border-t border-[#16202c] bg-[#09111a] p-3 font-mono">
+            <label className="flex items-center gap-3 rounded-xl border border-[#163044] bg-[#0e1a27] px-3 py-2.5">
+              <span className="text-[#5d7792]">visitor@portfolio</span>
+              <span className="text-[#3fe0aa]">%</span>
+              <input
+                value={terminalCommand}
+                onChange={(event) => onTerminalCommandChange(event.target.value)}
+                className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[#d9e9ff] outline-none placeholder:text-[#5e748a]"
+                placeholder='masaking app'
+                autoComplete="off"
+                spellCheck="false"
+              />
+            </label>
+            <div className="mt-2 text-[11px] text-[#6b8197]">`masaking app` で App を開く / `clear` でランチャーに戻る</div>
+            {terminalError ? <div className="mt-2 text-[11px] text-[#ff8f8f]">{terminalError}</div> : null}
+          </form>
         </div>
+      ) : (
+        <div className="flex h-full min-h-0 flex-col bg-[#081018] p-4 font-mono text-[12px] leading-6 text-[#9ab0c6]">
+          <div className="space-y-1">
+            <div className="text-[#d6e7ff]">Last login: {formatCurrentTimestamp()} on portfolio.local</div>
+            <div>connect target ........ portfolio://masaking</div>
+            <div>content route ........ {routeLabel}</div>
+            <div>workspace state ..... {getModeLabel(displayMode)}</div>
+          </div>
 
-        <div className="mt-4 rounded-2xl border border-[#1a2a39] bg-[#0b1420] p-3">
-          <div className="text-[#79e7ff]">visitor@portfolio ~ % select-runtime</div>
+          <div className="mt-4 min-h-0 flex-1 overflow-auto rounded-2xl border border-[#1a2a39] bg-[#0b1420] p-3 custom-scrollbar">
+            <div className="text-[#79e7ff]">type "masaking" or "masaking app"</div>
 
-          <div className="mt-3 space-y-2">
-            {modeOptions.map((option) => {
-              const isActive = displayMode === option.id;
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => onSelectMode(option.id)}
-                  className={`flex w-full items-start justify-between rounded-xl border px-3 py-2 text-left transition ${
-                    isActive
-                      ? 'border-cyan-300/28 bg-cyan-300/10 text-[#d9f7ff]'
-                      : 'border-[#163044] bg-[#0e1a27] text-[#a8bed2] hover:border-cyan-300/22 hover:text-[#d9f7ff]'
-                  }`}
+            <div className="mt-3 space-y-1 text-[#91a8be]">
+              {terminalLog.map((entry, index) => (
+                <div
+                  key={`${entry.text}-${index}`}
+                  className={
+                    entry.kind === 'command'
+                      ? 'text-[#d8ecff]'
+                      : entry.kind === 'error'
+                        ? 'text-[#ff8f8f]'
+                        : 'text-[#91a8be]'
+                  }
                 >
-                  <span>{option.command}</span>
-                  <span className="ml-4 shrink-0 text-[10px] uppercase tracking-[0.12em] text-[#6e87a0]">{option.description}</span>
-                </button>
-              );
-            })}
+                  {entry.kind === 'command' ? `visitor@portfolio ~ % ${entry.text}` : entry.text}
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={onTerminalSubmit} className="mt-4">
+              <label className="flex items-center gap-3 rounded-xl border border-[#163044] bg-[#0e1a27] px-3 py-2.5">
+                <span className="text-[#5d7792]">visitor@portfolio</span>
+                <span className="text-[#3fe0aa]">%</span>
+                <input
+                  value={terminalCommand}
+                  onChange={(event) => onTerminalCommandChange(event.target.value)}
+                  className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[#d9e9ff] outline-none placeholder:text-[#5e748a]"
+                  placeholder='masaking app'
+                  autoComplete="off"
+                  spellCheck="false"
+                />
+              </label>
+            </form>
+
+            {terminalError ? <div className="mt-3 text-[#ff8f8f]">{terminalError}</div> : null}
+
+            <div className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
+              <div className="rounded-2xl border border-[#152433] bg-[#0b1420]/90 p-5">
+                <div className="text-[11px] uppercase tracking-[0.14em] text-[#64809a]">Masaking Portfolio</div>
+                <div className="mt-4 text-[clamp(2.6rem,6vw,5.8rem)] font-semibold leading-[0.95] tracking-[-0.06em] text-[#e6f0ff]">
+                  Welcome,
+                  <br />
+                  visitor.
+                </div>
+                <p className="mt-5 max-w-[56ch] text-[13px] leading-7 text-[#8da4bb]">
+                  AIネイティブな Web アプリ、Chrome 拡張、Web サイトをまとめたポートフォリオです。コマンドで `Masaking CLI`
+                  か `Masaking App` を起動できます。
+                </p>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  <Link to="/works" className="rounded-xl border border-[#17314a] bg-[#0f1a27] px-4 py-3 transition hover:border-cyan-300/26 hover:text-white">
+                    <div className="text-[10px] uppercase tracking-[0.14em] text-[#64809a]">/works</div>
+                    <div className="mt-2 text-[13px] text-[#cfe3ff]">制作物一覧</div>
+                  </Link>
+                  <Link to="/about" className="rounded-xl border border-[#17314a] bg-[#0f1a27] px-4 py-3 transition hover:border-cyan-300/26 hover:text-white">
+                    <div className="text-[10px] uppercase tracking-[0.14em] text-[#64809a]">/about</div>
+                    <div className="mt-2 text-[13px] text-[#cfe3ff]">プロフィール</div>
+                  </Link>
+                  <Link to="/contact" className="rounded-xl border border-[#17314a] bg-[#0f1a27] px-4 py-3 transition hover:border-cyan-300/26 hover:text-white">
+                    <div className="text-[10px] uppercase tracking-[0.14em] text-[#64809a]">/contact</div>
+                    <div className="mt-2 text-[13px] text-[#cfe3ff]">連絡先</div>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-[#152433] bg-[#0b1420]/72 p-5">
+                <div className="text-[11px] uppercase tracking-[0.14em] text-[#64809a]">Capabilities</div>
+                <div className="mt-4 space-y-3 text-[13px] text-[#9cb2c8]">
+                  <div>Build Web Apps, Chrome Extensions, Websites</div>
+                  <div>React, Vite, Next.js, Cloudflare</div>
+                  <div>UI Implementation, Prototyping, AI Workflow</div>
+                  <div>Type `masaking` to enter the CLI</div>
+                  <div>Type `masaking app` to open the app window</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-[#152433] bg-[#0b1420]/80 p-3">
+              <div className="text-[10px] uppercase tracking-[0.14em] text-[#64809a]">Hint</div>
+              <div className="mt-2 space-y-1 text-[#91a8be]">
+                <div>`masaking` でこのターミナルがそのまま Masaking CLI に切り替わります。</div>
+                <div>`masaking app` で Masaking App を別ウィンドウ表示します。</div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="mt-4 rounded-2xl border border-[#152433] bg-[#0b1420]/80 p-3">
-          <div className="text-[10px] uppercase tracking-[0.14em] text-[#64809a]">Hint</div>
-          <div className="mt-2 space-y-1 text-[#91a8be]">
-            <div>CLI: 作品説明や差分をコマンドライン風に確認</div>
-            <div>App: 既存の3カラムUIをアプリウィンドウとして表示</div>
-            <div>Terminal: メインウィンドウを閉じてランチャーだけ残す</div>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => onSelectMode('idle')}
-          className="mt-4 rounded-xl border border-[#163044] bg-[#0e1a27] px-3 py-2 text-left text-[#8fa4b9] transition hover:border-white/16 hover:text-white"
-        >
-          visitor@portfolio ~ % exit-workspace
-        </button>
-
-        <div className="mt-auto pt-4 text-[#607b93]">ready for Masaking CLI / Masaking App</div>
-      </div>
+      )}
     </WindowShell>
   );
 }
@@ -1051,7 +1391,7 @@ function RightColumn({ diffEntries, scrollRef }) {
   );
 }
 
-function AppWindow({ threadType, selectedWork, threadState }) {
+function AppWindow({ threadType, selectedWork, threadState, shellProps = {} }) {
   const addedCount = getAddedLineCount(threadState.diffEntries);
   const containerRef = useRef(null);
   const centerScrollRef = useRef(null);
@@ -1150,11 +1490,13 @@ function AppWindow({ threadType, selectedWork, threadState }) {
       active
       className="flex h-full min-h-0 flex-col"
       bodyClassName="flex-1 min-h-0"
+      canMaximize
       actions={
         <span className="rounded-full border border-cyan-300/18 bg-cyan-300/10 px-2.5 py-1 text-[10.5px] uppercase tracking-[0.12em] text-cyan-100/72">
           workspace
         </span>
       }
+      {...shellProps}
     >
       <div ref={containerRef} className="relative min-h-0 flex-1 overflow-hidden bg-[#111112]">
         <div
@@ -1203,212 +1545,185 @@ function AppWindow({ threadType, selectedWork, threadState }) {
   );
 }
 
-function CliPrompt({ command }) {
-  return (
-    <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px]">
-      <span className="text-[#5d7792]">visitor@portfolio</span>
-      <span className="text-[#3fe0aa]">%</span>
-      <span className="text-[#d9e9ff]">{command}</span>
-    </div>
-  );
-}
-
-function CliWindow({ threadType, selectedWork, threadState }) {
-  const routeLabel = getRouteLabel(threadType, selectedWork);
-  const aggregateTechnologies = Array.from(new Set(works.flatMap((work) => work.technologies))).slice(0, 12);
-  const technologies = selectedWork
-    ? selectedWork.technologies
-    : threadType === 'about'
-      ? aboutContent.technologies
-      : aggregateTechnologies;
-
-  return (
-    <WindowShell
-      title="Masaking CLI"
-      subtitle={`session://${routeLabel}`}
-      statusLabel="CLI"
-      active
-      className="flex h-full min-h-0 flex-col"
-      bodyClassName="flex-1 min-h-0"
-      actions={
-        <span className="rounded-full border border-emerald-300/18 bg-emerald-300/10 px-2.5 py-1 text-[10.5px] uppercase tracking-[0.12em] text-emerald-100/72">
-          readonly
-        </span>
-      }
-    >
-      <div className="flex h-full min-h-0 flex-col bg-[#060a10]">
-        <div className="flex h-10 items-center justify-between border-b border-[#16202c] px-4 font-mono text-[11.5px] text-[#657d96]">
-          <span>/Users/user/development/website/portfolio</span>
-          <span>{threadState.diffEntries.length} staged previews</span>
-        </div>
-
-        <div className="min-h-0 flex-1 overflow-auto p-5 font-mono text-[12.5px] leading-6 custom-scrollbar">
-          <CliPrompt command="boot masaking-cli" />
-          <div className="mt-1 text-[#788fa7]">session attached to {routeLabel}</div>
-
-          <CliPrompt command="ls sections" />
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Link to="/" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
-              open top
-            </Link>
-            <Link to="/works" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
-              open works
-            </Link>
-            <Link to="/about" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
-              open about
-            </Link>
-            <Link to="/contact" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
-              open contact
-            </Link>
-          </div>
-
-          <CliPrompt command={selectedWork ? `open works/${selectedWork.id}` : `open ${threadType}`} />
-          <div className="mt-3 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
-            <div className="text-[#d9e9ff]">{threadState.answerTitle}</div>
-            <div className="mt-3 space-y-3 text-[#8da4bb]">
-              {threadState.paragraphs.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-            </div>
-          </div>
-
-          {!selectedWork && threadType === 'works' ? (
-            <div className="mt-4 overflow-hidden rounded-2xl border border-[#16202c] bg-[#0c121a]">
-              {works.map((work) => (
-                <Link
-                  key={work.id}
-                  to={`/work/${work.id}`}
-                  className="flex items-center justify-between border-t border-[#13202d] px-4 py-3 first:border-t-0 transition hover:bg-white/[0.03]"
-                >
-                  <div>
-                    <div className="text-[#d9e9ff]">{work.title}</div>
-                    <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">{work.category}</div>
-                  </div>
-                  <span className="text-[#72baf1]">open</span>
-                </Link>
-              ))}
-            </div>
-          ) : null}
-
-          {selectedWork ? (
-            <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_240px]">
-              <a
-                href={selectedWork.externalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="overflow-hidden rounded-2xl border border-[#16202c] bg-[#0c121a] p-3"
-              >
-                <img src={selectedWork.imageUrl} alt={selectedWork.title} className="aspect-[16/10] w-full rounded-xl object-cover" />
-              </a>
-
-              <div className="rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
-                <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">technologies</div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {selectedWork.technologies.map((technology) => (
-                    <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
-                      {technology}
-                    </span>
-                  ))}
-                </div>
-                <a
-                  href={selectedWork.externalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-4 inline-flex rounded-full border border-[#1e4969] bg-[#0f2132] px-3 py-1.5 text-[#d9f7ff] transition hover:bg-[#15324a]"
-                >
-                  xdg-open preview
-                </a>
-              </div>
-            </div>
-          ) : null}
-
-          {!selectedWork && threadType === 'about' ? (
-            <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
-              <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">stack --list</div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {aboutContent.technologies.map((technology) => (
-                  <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
-                    {technology}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {!selectedWork && threadType === 'contact' ? (
-            <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
-              <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">network --show</div>
-              <a href={`mailto:${contactContent.email}`} className="mt-3 block text-[#d9f7ff] transition hover:text-white">
-                {contactContent.email}
-              </a>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {contactContent.links.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4] transition hover:text-white"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {!selectedWork && threadType === 'top' ? (
-            <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
-              <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">available technologies</div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {aggregateTechnologies.map((technology) => (
-                  <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
-                    {technology}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {!selectedWork && threadType !== 'contact' && threadType !== 'about' && threadType !== 'top' ? (
-            <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
-              <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">stack --list</div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {technologies.map((technology) => (
-                  <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
-                    {technology}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          <CliPrompt command="git diff --staged --stat" />
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            {threadState.diffEntries.map((entry) => (
-              <div key={entry.fileName} className="rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="truncate text-[#d9e9ff]">{entry.fileName}</span>
-                  <span className="text-[#41d599]">+{entry.addedLines.length}</span>
-                </div>
-                <div className="mt-2 text-[#7088a1]">
-                  {entry.kind === 'image' ? 'image preview staged' : entry.addedLines.slice(0, 3).join(' / ')}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </WindowShell>
-  );
-}
-
-function WorkspaceScreen({ threadType = 'works' }) {
+function WorkspaceScreen({
+  threadType = 'works',
+  displayMode,
+  terminalCommand,
+  terminalLog,
+  terminalError,
+  onTerminalCommandChange,
+  onTerminalSubmit,
+}) {
   const { id } = useParams();
   const selectedWork = threadType === 'works' && id ? works.find((work) => work.id === id) ?? null : null;
   const effectiveThreadType = selectedWork ? 'works' : threadType;
   const threadState = getThreadState(effectiveThreadType, selectedWork);
-  const [displayMode, setDisplayMode] = useState(() => (threadType === 'top' && !id ? 'idle' : 'app'));
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
+  const [viewport, setViewport] = useState(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }));
+  const [windowFrames, setWindowFrames] = useState(() => getDesktopWindowFrames(window.innerWidth, window.innerHeight, displayMode));
+  const [activeWindow, setActiveWindow] = useState(displayMode === 'app' ? 'app' : 'terminal');
+  const [dragState, setDragState] = useState(null);
+  const previousDisplayModeRef = useRef(displayMode);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (!isDesktop) {
+      previousDisplayModeRef.current = displayMode;
+      return;
+    }
+
+    if (previousDisplayModeRef.current !== displayMode) {
+      setWindowFrames(getDesktopWindowFrames(viewport.width, viewport.height, displayMode));
+      setActiveWindow(displayMode === 'app' ? 'app' : 'terminal');
+      previousDisplayModeRef.current = displayMode;
+    }
+  }, [displayMode, isDesktop, viewport.height, viewport.width]);
+
+  useEffect(() => {
+    if (!isDesktop) {
+      return;
+    }
+
+    setWindowFrames((currentFrames) => ({
+      terminal: clampWindowFrame(currentFrames.terminal, viewport.width, viewport.height),
+      app: clampWindowFrame(currentFrames.app, viewport.width, viewport.height),
+    }));
+  }, [isDesktop, viewport.height, viewport.width]);
+
+  useEffect(() => {
+    if (!isDesktop || !dragState) {
+      return undefined;
+    }
+
+    const handlePointerMove = (event) => {
+      setWindowFrames((currentFrames) => {
+        const currentFrame = currentFrames[dragState.key];
+        if (!currentFrame || currentFrame.isMaximized) {
+          return currentFrames;
+        }
+
+        return {
+          ...currentFrames,
+          [dragState.key]: clampWindowFrame(
+            {
+              ...currentFrame,
+              x: event.clientX - dragState.offsetX,
+              y: event.clientY - dragState.offsetY,
+            },
+            viewport.width,
+            viewport.height,
+          ),
+        };
+      });
+    };
+
+    const handlePointerUp = () => setDragState(null);
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [dragState, isDesktop, viewport.height, viewport.width]);
+
+  function focusWindow(windowKey) {
+    setActiveWindow(windowKey);
+  }
+
+  function startWindowDrag(windowKey, event) {
+    if (!isDesktop) {
+      return;
+    }
+
+    const frame = windowFrames[windowKey];
+    if (!frame || frame.isMaximized) {
+      return;
+    }
+
+    event.preventDefault();
+    setActiveWindow(windowKey);
+    setDragState({
+      key: windowKey,
+      offsetX: event.clientX - frame.x,
+      offsetY: event.clientY - frame.y,
+    });
+  }
+
+  function toggleWindowMaximize(windowKey) {
+    if (!isDesktop) {
+      return;
+    }
+
+    setActiveWindow(windowKey);
+    setWindowFrames((currentFrames) => {
+      const frame = currentFrames[windowKey];
+      if (!frame) {
+        return currentFrames;
+      }
+
+      if (frame.isMaximized && frame.restoreFrame) {
+        return {
+          ...currentFrames,
+          [windowKey]: {
+            ...clampWindowFrame(
+              {
+                ...frame.restoreFrame,
+                isMaximized: false,
+              },
+              viewport.width,
+              viewport.height,
+            ),
+            restoreFrame: null,
+          },
+        };
+      }
+
+      return {
+        ...currentFrames,
+        [windowKey]: {
+          ...getMaximizedFrame(viewport.width, viewport.height),
+          restoreFrame: {
+            x: frame.x,
+            y: frame.y,
+            width: frame.width,
+            height: frame.height,
+          },
+        },
+      };
+    });
+  }
+
+  const terminalShellProps = {
+    active: activeWindow === 'terminal',
+    isMaximized: Boolean(windowFrames.terminal?.isMaximized),
+    onWindowPointerDown: () => focusWindow('terminal'),
+    onHeaderPointerDown: (event) => startWindowDrag('terminal', event),
+    onToggleMaximize: () => toggleWindowMaximize('terminal'),
+  };
+
+  const appShellProps = {
+    active: activeWindow === 'app',
+    isMaximized: Boolean(windowFrames.app?.isMaximized),
+    onWindowPointerDown: () => focusWindow('app'),
+    onHeaderPointerDown: (event) => startWindowDrag('app', event),
+    onToggleMaximize: () => toggleWindowMaximize('app'),
+  };
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-[#050816] text-white antialiased">
@@ -1417,68 +1732,213 @@ function WorkspaceScreen({ threadType = 'works' }) {
       <div className="relative flex h-full flex-col overflow-hidden">
         <DesktopMenuBar displayMode={displayMode} />
 
-        <div className="relative flex-1 overflow-hidden px-3 pb-24 pt-3 sm:px-5 sm:pt-5 lg:px-6 lg:pt-6">
+        <div className="relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 lg:px-6 lg:pt-6">
           <div className="flex h-full flex-col gap-4 lg:hidden">
-            <div className="shrink-0">
-              <LauncherTerminalWindow
-                threadType={effectiveThreadType}
-                selectedWork={selectedWork}
-                displayMode={displayMode}
-                onSelectMode={setDisplayMode}
-              />
-            </div>
-
             {displayMode === 'cli' ? (
               <div className="min-h-0 flex-1">
-                <CliWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
+                <LauncherTerminalWindow
+                  threadType={effectiveThreadType}
+                  selectedWork={selectedWork}
+                  threadState={threadState}
+                  displayMode={displayMode}
+                  terminalCommand={terminalCommand}
+                  terminalLog={terminalLog}
+                  terminalError={terminalError}
+                  onTerminalCommandChange={onTerminalCommandChange}
+                  onTerminalSubmit={onTerminalSubmit}
+                />
               </div>
-            ) : null}
+            ) : (
+              <>
+                <div className="shrink-0">
+                  <LauncherTerminalWindow
+                    threadType={effectiveThreadType}
+                    selectedWork={selectedWork}
+                    threadState={threadState}
+                    displayMode={displayMode}
+                    terminalCommand={terminalCommand}
+                    terminalLog={terminalLog}
+                    terminalError={terminalError}
+                    onTerminalCommandChange={onTerminalCommandChange}
+                    onTerminalSubmit={onTerminalSubmit}
+                  />
+                </div>
 
-            {displayMode === 'app' ? (
-              <div className="min-h-0 flex-1">
-                <AppWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
-              </div>
-            ) : null}
+                {displayMode === 'app' ? (
+                  <div className="min-h-0 flex-1">
+                    <AppWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
+                  </div>
+                ) : null}
+              </>
+            )}
           </div>
 
           <div className="relative hidden h-full lg:block">
-            <div className="absolute left-0 top-0 z-20 h-[360px] w-[360px] xl:h-[390px] xl:w-[380px]">
+            <div
+              style={{
+                left: `${windowFrames.terminal.x}px`,
+                top: `${windowFrames.terminal.y}px`,
+                width: `${windowFrames.terminal.width}px`,
+                height: `${windowFrames.terminal.height}px`,
+                zIndex: activeWindow === 'terminal' ? 30 : 20,
+              }}
+              className="absolute"
+            >
               <LauncherTerminalWindow
                 threadType={effectiveThreadType}
                 selectedWork={selectedWork}
+                threadState={threadState}
                 displayMode={displayMode}
-                onSelectMode={setDisplayMode}
+                terminalCommand={terminalCommand}
+                terminalLog={terminalLog}
+                terminalError={terminalError}
+                onTerminalCommandChange={onTerminalCommandChange}
+                onTerminalSubmit={onTerminalSubmit}
+                shellProps={terminalShellProps}
               />
             </div>
 
-            {displayMode === 'cli' ? (
-              <div className="absolute bottom-0 left-[300px] right-0 top-[72px] xl:left-[328px] xl:top-[86px]">
-                <CliWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
-              </div>
-            ) : null}
-
             {displayMode === 'app' ? (
-              <div className="absolute bottom-0 left-[286px] right-0 top-[64px] xl:left-[316px] xl:top-[80px]">
-                <AppWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
+              <div
+                style={{
+                  left: `${windowFrames.app.x}px`,
+                  top: `${windowFrames.app.y}px`,
+                  width: `${windowFrames.app.width}px`,
+                  height: `${windowFrames.app.height}px`,
+                  zIndex: activeWindow === 'app' ? 30 : 20,
+                }}
+                className="absolute"
+              >
+                <AppWindow
+                  threadType={effectiveThreadType}
+                  selectedWork={selectedWork}
+                  threadState={threadState}
+                  shellProps={appShellProps}
+                />
               </div>
             ) : null}
           </div>
         </div>
-
-        <DesktopDock displayMode={displayMode} onSelectMode={setDisplayMode} />
       </div>
     </div>
   );
 }
 
 function App() {
+  const [displayMode, setDisplayMode] = useState(() => (window.location.pathname === '/' ? 'idle' : 'app'));
+  const [terminalCommand, setTerminalCommand] = useState('');
+  const [terminalError, setTerminalError] = useState('');
+  const [terminalLog, setTerminalLog] = useState(() => [
+    { kind: 'system', text: 'type "masaking" or "masaking app"' },
+  ]);
+
+  function handleTerminalSubmit(event) {
+    event.preventDefault();
+    const normalizedCommand = terminalCommand.trim().toLowerCase().replace(/\s+/g, ' ');
+    if (!normalizedCommand) {
+      return;
+    }
+
+    setTerminalLog((currentLog) => [...currentLog, { kind: 'command', text: terminalCommand.trim() }]);
+    setTerminalCommand('');
+
+    if (normalizedCommand === 'masaking') {
+      setDisplayMode('cli');
+      setTerminalError('');
+      setTerminalLog((currentLog) => [...currentLog, { kind: 'system', text: 'Masaking CLI を起動しました。' }]);
+      return;
+    }
+
+    if (normalizedCommand === 'masaking app') {
+      setDisplayMode('app');
+      setTerminalError('');
+      setTerminalLog((currentLog) => [...currentLog, { kind: 'system', text: 'Masaking App を起動しました。' }]);
+      return;
+    }
+
+    if (normalizedCommand === 'clear') {
+      setDisplayMode('idle');
+      setTerminalError('');
+      setTerminalLog([{ kind: 'system', text: 'type "masaking" or "masaking app"' }]);
+      return;
+    }
+
+    setTerminalError(`unknown command: ${normalizedCommand}`);
+    setTerminalLog((currentLog) => [...currentLog, { kind: 'error', text: `unknown command: ${normalizedCommand}` }]);
+  }
+
   return (
     <Routes>
-      <Route path="/" element={<WorkspaceScreen threadType="top" />} />
-      <Route path="/works" element={<WorkspaceScreen threadType="works" />} />
-      <Route path="/work/:id" element={<WorkspaceScreen threadType="works" />} />
-      <Route path="/about" element={<WorkspaceScreen threadType="about" />} />
-      <Route path="/contact" element={<WorkspaceScreen threadType="contact" />} />
+      <Route
+        path="/"
+        element={
+          <WorkspaceScreen
+            threadType="top"
+            displayMode={displayMode}
+            terminalCommand={terminalCommand}
+            terminalLog={terminalLog}
+            terminalError={terminalError}
+            onTerminalCommandChange={setTerminalCommand}
+            onTerminalSubmit={handleTerminalSubmit}
+          />
+        }
+      />
+      <Route
+        path="/works"
+        element={
+          <WorkspaceScreen
+            threadType="works"
+            displayMode={displayMode}
+            terminalCommand={terminalCommand}
+            terminalLog={terminalLog}
+            terminalError={terminalError}
+            onTerminalCommandChange={setTerminalCommand}
+            onTerminalSubmit={handleTerminalSubmit}
+          />
+        }
+      />
+      <Route
+        path="/work/:id"
+        element={
+          <WorkspaceScreen
+            threadType="works"
+            displayMode={displayMode}
+            terminalCommand={terminalCommand}
+            terminalLog={terminalLog}
+            terminalError={terminalError}
+            onTerminalCommandChange={setTerminalCommand}
+            onTerminalSubmit={handleTerminalSubmit}
+          />
+        }
+      />
+      <Route
+        path="/about"
+        element={
+          <WorkspaceScreen
+            threadType="about"
+            displayMode={displayMode}
+            terminalCommand={terminalCommand}
+            terminalLog={terminalLog}
+            terminalError={terminalError}
+            onTerminalCommandChange={setTerminalCommand}
+            onTerminalSubmit={handleTerminalSubmit}
+          />
+        }
+      />
+      <Route
+        path="/contact"
+        element={
+          <WorkspaceScreen
+            threadType="contact"
+            displayMode={displayMode}
+            terminalCommand={terminalCommand}
+            terminalLog={terminalLog}
+            terminalError={terminalError}
+            onTerminalCommandChange={setTerminalCommand}
+            onTerminalSubmit={handleTerminalSubmit}
+          />
+        }
+      />
     </Routes>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 
 export const Cursor = () => {
@@ -70,7 +70,7 @@ export const Cursor = () => {
     return (
         <>
             {/* Main Dot */}
-            <motion.div
+            <Motion.div
                 className="cursor-dot"
                 variants={dotVariants}
                 animate={isHovering ? "hover" : "default"}
@@ -94,7 +94,7 @@ export const Cursor = () => {
             />
 
             {/* Trailing Ring */}
-            <motion.div
+            <Motion.div
                 className="cursor-ring"
                 variants={variants}
                 animate={isHovering ? "hover" : "default"}

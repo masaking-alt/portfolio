@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { Reveal } from './Reveal';
 import { ParallaxText } from './ParallaxText';
 import WorksSection from './WorksSection';
@@ -13,31 +13,31 @@ function MobileHome() {
                 </div>
                 <div className="mobile-hero-content">
                     <h1 className="mobile-hero-title">
-                        <motion.span
+                        <Motion.span
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
                             style={{ display: "block" }}
                         >
                             Hello,
-                        </motion.span>
-                        <motion.span
+                        </Motion.span>
+                        <Motion.span
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.5, delay: 0.4 }}
                             style={{ display: "block" }}
                         >
                             I'm Masaking.
-                        </motion.span>
+                        </Motion.span>
                     </h1>
-                    <motion.p
+                    <Motion.p
                         className="mobile-hero-subtitle"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.5, delay: 0.8 }}
                     >
                         AI-Native Full-Stack Developer
-                    </motion.p>
+                    </Motion.p>
                 </div>
             </section>
 

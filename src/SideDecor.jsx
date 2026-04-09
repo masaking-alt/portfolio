@@ -1,4 +1,4 @@
-import { motion, useScroll } from "framer-motion";
+import { motion as Motion, useScroll } from "framer-motion";
 import "./SideDecor.css";
 
 export const SideDecor = () => {
@@ -14,7 +14,7 @@ export const SideDecor = () => {
                 </div>
             </div>
             <div className="side-decor-right">
-                <motion.div
+                <Motion.div
                     className="scroll-progress"
                     style={{ scaleY: scrollYProgress }}
                 />

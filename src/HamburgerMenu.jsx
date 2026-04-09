@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import './HamburgerMenu.css';
 
 export const HamburgerMenu = () => {
@@ -54,7 +54,7 @@ export const HamburgerMenu = () => {
 
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div
+                    <Motion.div
                         className="mobile-menu-overlay"
                         initial="closed"
                         animate="open"
@@ -63,7 +63,7 @@ export const HamburgerMenu = () => {
                     >
                         <nav className="mobile-nav">
                             {['Top', 'Works', 'About', 'Contact'].map((item, i) => (
-                                <motion.div
+                                <Motion.div
                                     key={item}
                                     custom={i}
                                     variants={linkVariants}
@@ -75,10 +75,10 @@ export const HamburgerMenu = () => {
                                     >
                                         {item}
                                     </Link>
-                                </motion.div>
+                                </Motion.div>
                             ))}
                         </nav>
-                    </motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
         </>

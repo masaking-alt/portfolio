@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import {
-    motion,
+    motion as Motion,
     useScroll,
     useSpring,
     useTransform,
@@ -58,7 +58,7 @@ export const ParallaxText = ({ children, baseVelocity = 5 }) => {
      */
     return (
         <div className="parallax">
-            <motion.div className="scroller" style={{ x }}>
+            <Motion.div className="scroller" style={{ x }}>
                 <span>{children} </span>
                 <span>{children} </span>
                 <span>{children} </span>
@@ -67,7 +67,7 @@ export const ParallaxText = ({ children, baseVelocity = 5 }) => {
                 <span>{children} </span>
                 <span>{children} </span>
                 <span>{children} </span>
-            </motion.div>
+            </Motion.div>
         </div>
     );
 };

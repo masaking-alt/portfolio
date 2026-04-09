@@ -61,11 +61,6 @@ function formatCurrentTimestamp() {
   return `${weekday}, ${month} ${now.getDate()} ${padTwoDigits(now.getHours())}:${padTwoDigits(now.getMinutes())}`;
 }
 
-function formatThreadTime(index) {
-  const labels = ['27m', '1h', '3h', 'Yesterday', '3d ago', '1mo', '1mo', '2mo', '2mo', '3mo'];
-  return labels[index] ?? '1mo';
-}
-
 function splitTextLines(text, width = 26) {
   const lines = [];
   for (let index = 0; index < text.length; index += width) {
@@ -220,24 +215,46 @@ function clampColumnWidths(widths, containerWidth) {
   return { left, right };
 }
 
-function ThreadGroup({ label, to, isActive, children }) {
+function ThreadGroup({ label, isActive, isOpen, onToggle, children }) {
   return (
     <div className="mt-2">
-      <Link
-        to={to}
-        className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-[12px] font-medium uppercase tracking-[0.08em] transition ${
-          isActive ? 'text-white/64' : 'text-white/30 hover:bg-white/[0.03] hover:text-white/52'
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium transition ${
+          isActive ? 'text-white/76' : 'text-white/50 hover:bg-white/[0.03] hover:text-white/68'
         }`}
       >
-        <FolderOpen className={`h-3.5 w-3.5 ${isActive ? 'text-white/44' : 'text-white/24'}`} />
+        <ChevronRight className={`h-3.5 w-3.5 shrink-0 transition ${isOpen ? 'rotate-90 text-white/32' : 'text-white/24'}`} />
+        <FolderOpen className={`h-3.5 w-3.5 shrink-0 ${isActive ? 'text-white/50' : 'text-white/28'}`} />
         <span>{label}</span>
-      </Link>
-      <div className="space-y-0.5">{children}</div>
+      </button>
+      {isOpen ? <div className="space-y-0.5">{children}</div> : null}
     </div>
   );
 }
 
 function LeftSidebar({ activeThreadType, selectedWorkId }) {
+  const [openGroups, setOpenGroups] = useState(() => ({
+    works: true,
+    about: activeThreadType === 'about',
+    contact: activeThreadType === 'contact',
+  }));
+
+  useEffect(() => {
+    setOpenGroups((current) => ({
+      ...current,
+      [activeThreadType]: true,
+    }));
+  }, [activeThreadType]);
+
+  function toggleGroup(group) {
+    setOpenGroups((current) => ({
+      ...current,
+      [group]: !current[group],
+    }));
+  }
+
   return (
     <aside className="relative order-4 flex min-h-0 flex-col bg-[#141415] lg:order-none lg:col-start-1 lg:row-[1/3] lg:border-r lg:border-white/[0.05]">
       <div className="flex h-12 items-center justify-between px-3.5">
@@ -283,66 +300,63 @@ function LeftSidebar({ activeThreadType, selectedWorkId }) {
           <span>portfolio</span>
         </div>
 
-        <ThreadGroup label="works" to="/works" isActive={activeThreadType === 'works' && !selectedWorkId}>
-          {works.map((work, index) => {
+        <ThreadGroup
+          label="works"
+          isActive={activeThreadType === 'works'}
+          isOpen={openGroups.works}
+          onToggle={() => toggleGroup('works')}
+        >
+          {works.map((work) => {
             const isSelected = activeThreadType === 'works' && selectedWorkId === work.id;
             return (
               <Link
                 key={work.id}
                 to={`/work/${work.id}`}
-                className={`ml-[22px] flex items-start justify-between rounded-xl px-3 py-2 transition ${
+                className={`ml-[32px] flex min-w-0 items-center rounded-lg px-3 py-1.5 transition ${
                   isSelected
                     ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
                     : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
                 }`}
               >
-                <div className="min-w-0 pr-2">
-                  <div className="truncate text-[12.5px] font-medium">{work.title}</div>
-                  <div className={`mt-0.5 truncate text-[11px] ${isSelected ? 'text-white/42' : 'text-white/28'}`}>
-                    {work.category}
-                  </div>
-                </div>
-                <span className={`pt-0.5 text-[10.5px] ${isSelected ? 'text-white/42' : 'text-white/28'}`}>{formatThreadTime(index)}</span>
+                <div className="truncate text-[12.5px] font-medium">{work.title}</div>
               </Link>
             );
           })}
         </ThreadGroup>
 
-        <ThreadGroup label="about" to="/about" isActive={activeThreadType === 'about'}>
+        <ThreadGroup
+          label="about"
+          isActive={activeThreadType === 'about'}
+          isOpen={openGroups.about}
+          onToggle={() => toggleGroup('about')}
+        >
           <Link
             to="/about"
-            className={`ml-[22px] flex items-start justify-between rounded-xl px-3 py-2 transition ${
+            className={`ml-[32px] flex min-w-0 items-center rounded-lg px-3 py-1.5 transition ${
               activeThreadType === 'about'
                 ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
                 : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
             }`}
           >
-            <div className="min-w-0 pr-2">
-              <div className="truncate text-[12.5px] font-medium">about me</div>
-              <div className={`mt-0.5 truncate text-[11px] ${activeThreadType === 'about' ? 'text-white/42' : 'text-white/28'}`}>
-                自己紹介
-              </div>
-            </div>
-            <span className={`pt-0.5 text-[10.5px] ${activeThreadType === 'about' ? 'text-white/42' : 'text-white/28'}`}>1h</span>
+            <div className="truncate text-[12.5px] font-medium">about me</div>
           </Link>
         </ThreadGroup>
 
-        <ThreadGroup label="contact" to="/contact" isActive={activeThreadType === 'contact'}>
+        <ThreadGroup
+          label="contact"
+          isActive={activeThreadType === 'contact'}
+          isOpen={openGroups.contact}
+          onToggle={() => toggleGroup('contact')}
+        >
           <Link
             to="/contact"
-            className={`ml-[22px] flex items-start justify-between rounded-xl px-3 py-2 transition ${
+            className={`ml-[32px] flex min-w-0 items-center rounded-lg px-3 py-1.5 transition ${
               activeThreadType === 'contact'
                 ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
                 : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
             }`}
           >
-            <div className="min-w-0 pr-2">
-              <div className="truncate text-[12.5px] font-medium">reach out</div>
-              <div className={`mt-0.5 truncate text-[11px] ${activeThreadType === 'contact' ? 'text-white/42' : 'text-white/28'}`}>
-                mail, sns
-              </div>
-            </div>
-            <span className={`pt-0.5 text-[10.5px] ${activeThreadType === 'contact' ? 'text-white/42' : 'text-white/28'}`}>3h</span>
+            <div className="truncate text-[12.5px] font-medium">reach out</div>
           </Link>
         </ThreadGroup>
       </div>

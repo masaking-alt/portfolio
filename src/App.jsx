@@ -252,6 +252,222 @@ function clampColumnWidths(widths, containerWidth) {
   return { left, right };
 }
 
+function getRouteLabel(threadType, selectedWork) {
+  if (selectedWork) {
+    return `works/${selectedWork.id}`;
+  }
+  return threadType;
+}
+
+function getModeLabel(displayMode) {
+  if (displayMode === 'cli') {
+    return 'Masaking CLI';
+  }
+  if (displayMode === 'app') {
+    return 'Masaking App';
+  }
+  return 'Terminal standby';
+}
+
+function WindowShell({ title, subtitle, statusLabel, actions, active = false, className = '', bodyClassName = '', children }) {
+  return (
+    <section
+      className={`relative overflow-hidden rounded-[28px] border bg-[#0d1017]/90 backdrop-blur-xl ${
+        active
+          ? 'border-white/16 shadow-[0_28px_90px_rgba(0,0,0,0.48)]'
+          : 'border-white/10 shadow-[0_18px_56px_rgba(0,0,0,0.34)]'
+      } ${className}`}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_42%)]" />
+
+      <div className="relative flex h-12 items-center justify-between border-b border-white/[0.08] px-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+          </div>
+
+          <div className="min-w-0">
+            <div className="truncate text-[12.5px] font-medium text-white/88">{title}</div>
+            {subtitle ? (
+              <div className="truncate text-[10.5px] uppercase tracking-[0.12em] text-white/34">{subtitle}</div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {statusLabel ? (
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10.5px] uppercase tracking-[0.12em] text-white/56">
+              {statusLabel}
+            </span>
+          ) : null}
+          {actions}
+        </div>
+      </div>
+
+      <div className={`relative min-h-0 ${bodyClassName}`}>{children}</div>
+    </section>
+  );
+}
+
+function DesktopBackdrop() {
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 bg-[#050816]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(84,118,255,0.28),transparent_24%),radial-gradient(circle_at_82%_18%,rgba(51,207,198,0.18),transparent_18%),radial-gradient(circle_at_50%_100%,rgba(255,120,84,0.18),transparent_28%)]" />
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
+          backgroundSize: '140px 140px',
+        }}
+      />
+      <div className="absolute -left-12 top-24 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+      <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-indigo-500/14 blur-3xl" />
+      <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-rose-500/10 blur-3xl" />
+    </div>
+  );
+}
+
+function DesktopMenuBar({ displayMode }) {
+  return (
+    <div className="relative z-40 flex h-9 items-center justify-between border-b border-white/[0.08] bg-[#070a10]/70 px-4 text-[12px] text-white/72 backdrop-blur-xl">
+      <div className="flex min-w-0 items-center gap-4">
+        <img src="/favicon.png" alt="" className="h-4 w-4 rounded-[4px]" />
+        <span className="font-semibold text-white/88">masaking.desktop</span>
+        <span>Session</span>
+        <span>Portfolio</span>
+        <span>Window</span>
+        <span className="truncate rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-[10.5px] uppercase tracking-[0.12em] text-white/52">
+          {getModeLabel(displayMode)}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <Search className="h-3.5 w-3.5" />
+        <span>{formatCurrentTimestamp()}</span>
+      </div>
+    </div>
+  );
+}
+
+function DesktopDock({ displayMode, onSelectMode }) {
+  const dockItems = [
+    { id: 'idle', label: 'Terminal' },
+    { id: 'cli', label: 'Masaking CLI' },
+    { id: 'app', label: 'Masaking App' },
+  ];
+
+  return (
+    <div className="pointer-events-none absolute bottom-4 left-1/2 z-40 -translate-x-1/2">
+      <div className="pointer-events-auto flex items-center gap-2 rounded-[24px] border border-white/[0.1] bg-[#0b0f16]/78 px-3 py-2 shadow-[0_18px_48px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+        {dockItems.map((item) => {
+          const isActive = item.id === displayMode;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onSelectMode(item.id)}
+              className={`flex min-w-[94px] flex-col items-center rounded-2xl border px-3 py-2 text-center transition ${
+                isActive
+                  ? 'border-cyan-300/30 bg-cyan-300/12 text-white shadow-[0_0_0_1px_rgba(125,211,252,0.08)]'
+                  : 'border-white/[0.06] bg-white/[0.03] text-white/62 hover:bg-white/[0.06] hover:text-white/86'
+              }`}
+            >
+              <span className="text-[12px] font-medium">{item.label}</span>
+              <span className="mt-1 text-[10px] uppercase tracking-[0.14em] text-white/34">
+                {item.id === 'idle' ? 'launcher' : item.id}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function LauncherTerminalWindow({ threadType, selectedWork, displayMode, onSelectMode }) {
+  const routeLabel = getRouteLabel(threadType, selectedWork);
+  const modeOptions = [
+    {
+      id: 'cli',
+      command: './launch masaking-cli',
+      description: 'コマンド履歴ベースで閲覧',
+    },
+    {
+      id: 'app',
+      command: 'open -a "Masaking App"',
+      description: 'GUIワークスペースで閲覧',
+    },
+  ];
+
+  return (
+    <WindowShell
+      title="terminal"
+      subtitle="runtime selector"
+      statusLabel={displayMode === 'idle' ? 'waiting' : 'linked'}
+      active={displayMode === 'idle'}
+      className="flex h-full min-h-0 flex-col"
+      bodyClassName="flex-1 min-h-0"
+    >
+      <div className="flex h-full min-h-0 flex-col bg-[#081018] p-4 font-mono text-[12px] leading-6 text-[#9ab0c6]">
+        <div className="space-y-1">
+          <div className="text-[#d6e7ff]">Last login: {formatCurrentTimestamp()} on portfolio.local</div>
+          <div>connect target ........ portfolio://masaking</div>
+          <div>content route ........ {routeLabel}</div>
+          <div>workspace state ..... {getModeLabel(displayMode)}</div>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-[#1a2a39] bg-[#0b1420] p-3">
+          <div className="text-[#79e7ff]">visitor@portfolio ~ % select-runtime</div>
+
+          <div className="mt-3 space-y-2">
+            {modeOptions.map((option) => {
+              const isActive = displayMode === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => onSelectMode(option.id)}
+                  className={`flex w-full items-start justify-between rounded-xl border px-3 py-2 text-left transition ${
+                    isActive
+                      ? 'border-cyan-300/28 bg-cyan-300/10 text-[#d9f7ff]'
+                      : 'border-[#163044] bg-[#0e1a27] text-[#a8bed2] hover:border-cyan-300/22 hover:text-[#d9f7ff]'
+                  }`}
+                >
+                  <span>{option.command}</span>
+                  <span className="ml-4 shrink-0 text-[10px] uppercase tracking-[0.12em] text-[#6e87a0]">{option.description}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-4 rounded-2xl border border-[#152433] bg-[#0b1420]/80 p-3">
+          <div className="text-[10px] uppercase tracking-[0.14em] text-[#64809a]">Hint</div>
+          <div className="mt-2 space-y-1 text-[#91a8be]">
+            <div>CLI: 作品説明や差分をコマンドライン風に確認</div>
+            <div>App: 既存の3カラムUIをアプリウィンドウとして表示</div>
+            <div>Terminal: メインウィンドウを閉じてランチャーだけ残す</div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onSelectMode('idle')}
+          className="mt-4 rounded-xl border border-[#163044] bg-[#0e1a27] px-3 py-2 text-left text-[#8fa4b9] transition hover:border-white/16 hover:text-white"
+        >
+          visitor@portfolio ~ % exit-workspace
+        </button>
+
+        <div className="mt-auto pt-4 text-[#607b93]">ready for Masaking CLI / Masaking App</div>
+      </div>
+    </WindowShell>
+  );
+}
+
 function ThreadGroup({ label, isActive, isOpen, onToggle, children }) {
   return (
     <div className="mt-2">
@@ -296,11 +512,11 @@ function LeftSidebar({ activeThreadType, selectedWorkId }) {
   return (
     <aside className="relative order-4 flex min-h-0 flex-col bg-[#141415] lg:order-none lg:col-start-1 lg:row-[1/3] lg:border-r lg:border-white/[0.05]">
       <div className="flex h-12 items-center justify-between px-3.5">
-        <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-          <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
-          <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+        <div>
+          <div className="text-[10.5px] uppercase tracking-[0.12em] text-white/28">Workspace</div>
+          <div className="mt-1 text-[13px] font-medium text-white/82">Masaking App</div>
         </div>
+
         <div className="flex items-center gap-1 text-white/28">
           <button type="button" className="rounded-md p-1 hover:bg-white/[0.05]">
             <ChevronLeft className="h-3.5 w-3.5" />
@@ -422,28 +638,6 @@ function LeftSidebar({ activeThreadType, selectedWorkId }) {
         </button>
       </div>
     </aside>
-  );
-}
-
-function MacMenuBar() {
-  return (
-    <div className="flex h-6 items-center justify-between border-b border-white/[0.05] bg-[#17181a] px-3 text-[12px] text-white/72">
-      <div className="flex items-center gap-4">
-        <img src="/favicon.png" alt="" className="h-3.5 w-3.5 rounded-[3px]" />
-        <span className="font-semibold text-white/90">masaking</span>
-        <span>File</span>
-        <span>Edit</span>
-        <span>View</span>
-        <span>Window</span>
-        <span>Help</span>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Search className="h-3.5 w-3.5" />
-        <span className="inline-flex h-4 min-w-4 items-center justify-center rounded border border-white/20 px-1 text-[10px] font-semibold">A</span>
-        <span>{formatCurrentTimestamp()}</span>
-      </div>
-    </div>
   );
 }
 
@@ -857,13 +1051,8 @@ function RightColumn({ diffEntries, scrollRef }) {
   );
 }
 
-function WorkspaceScreen({ threadType = 'works' }) {
-  const { id } = useParams();
-  const selectedWork = threadType === 'works' && id ? works.find((work) => work.id === id) ?? null : null;
-  const effectiveThreadType = selectedWork ? 'works' : threadType;
-  const threadState = getThreadState(effectiveThreadType, selectedWork);
+function AppWindow({ threadType, selectedWork, threadState }) {
   const addedCount = getAddedLineCount(threadState.diffEntries);
-
   const containerRef = useRef(null);
   const centerScrollRef = useRef(null);
   const rightScrollRef = useRef(null);
@@ -918,6 +1107,7 @@ function WorkspaceScreen({ threadType = 'works' }) {
       if (!containerRef.current) {
         return;
       }
+
       const rect = containerRef.current.getBoundingClientRect();
       if (draggingDivider === 'left') {
         const nextLeftWidth = event.clientX - rect.left;
@@ -946,60 +1136,336 @@ function WorkspaceScreen({ threadType = 'works' }) {
     if (rightScrollRef.current) {
       rightScrollRef.current.scrollTop = 0;
     }
-  }, [threadType, id]);
+  }, [threadType, selectedWork?.id]);
 
   const gridStyle = isDesktop
     ? { gridTemplateColumns: `${columnWidths.left}px minmax(0, 1fr) ${columnWidths.right}px` }
     : undefined;
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#111112] text-white antialiased">
-      <div className="flex h-full w-full flex-col">
-        <MacMenuBar />
+    <WindowShell
+      title="Masaking App"
+      subtitle={threadState.title}
+      statusLabel="GUI"
+      active
+      className="flex h-full min-h-0 flex-col"
+      bodyClassName="flex-1 min-h-0"
+      actions={
+        <span className="rounded-full border border-cyan-300/18 bg-cyan-300/10 px-2.5 py-1 text-[10.5px] uppercase tracking-[0.12em] text-cyan-100/72">
+          workspace
+        </span>
+      }
+    >
+      <div ref={containerRef} className="relative min-h-0 flex-1 overflow-hidden bg-[#111112]">
+        <div
+          className="grid h-full w-full grid-cols-1 auto-rows-max lg:grid-cols-[268px_minmax(0,1fr)_864px] lg:grid-rows-[40px_minmax(0,1fr)]"
+          style={gridStyle}
+        >
+          <LeftSidebar activeThreadType={threadType} selectedWorkId={selectedWork?.id ?? null} />
+          <TopBar title={threadState.title} addedCount={addedCount} />
+          <CenterColumn
+            threadType={threadType}
+            selectedWork={selectedWork}
+            threadState={threadState}
+            scrollRef={centerScrollRef}
+          />
+          <RightColumn diffEntries={threadState.diffEntries} scrollRef={rightScrollRef} />
+        </div>
 
-        <div ref={containerRef} className="relative min-h-0 flex-1 overflow-auto lg:overflow-hidden">
-          <div
-            className="grid h-full w-full grid-cols-1 auto-rows-max lg:grid-cols-[268px_minmax(0,1fr)_864px] lg:grid-rows-[40px_minmax(0,1fr)]"
-            style={gridStyle}
-          >
-            <LeftSidebar activeThreadType={effectiveThreadType} selectedWorkId={selectedWork?.id ?? null} />
-            <TopBar title={threadState.title} addedCount={addedCount} />
-            <CenterColumn
-              threadType={effectiveThreadType}
-              selectedWork={selectedWork}
-              threadState={threadState}
-              scrollRef={centerScrollRef}
-            />
-            <RightColumn diffEntries={threadState.diffEntries} scrollRef={rightScrollRef} />
+        {isDesktop && containerWidth > 0 ? (
+          <>
+            <div
+              style={{ left: `${columnWidths.left}px` }}
+              className="absolute top-10 bottom-0 z-30 hidden w-3 -translate-x-1/2 cursor-col-resize lg:block"
+              onPointerDown={(event) => {
+                event.preventDefault();
+                setDraggingDivider('left');
+              }}
+            >
+              <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/[0.05]" />
+              <span className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-transparent transition hover:bg-white/[0.16]" />
+            </div>
+            <div
+              style={{ left: `${containerWidth - columnWidths.right}px` }}
+              className="absolute top-10 bottom-0 z-30 hidden w-3 -translate-x-1/2 cursor-col-resize lg:block"
+              onPointerDown={(event) => {
+                event.preventDefault();
+                setDraggingDivider('right');
+              }}
+            >
+              <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/[0.05]" />
+              <span className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-transparent transition hover:bg-white/[0.16]" />
+            </div>
+          </>
+        ) : null}
+      </div>
+    </WindowShell>
+  );
+}
+
+function CliPrompt({ command }) {
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px]">
+      <span className="text-[#5d7792]">visitor@portfolio</span>
+      <span className="text-[#3fe0aa]">%</span>
+      <span className="text-[#d9e9ff]">{command}</span>
+    </div>
+  );
+}
+
+function CliWindow({ threadType, selectedWork, threadState }) {
+  const routeLabel = getRouteLabel(threadType, selectedWork);
+  const aggregateTechnologies = Array.from(new Set(works.flatMap((work) => work.technologies))).slice(0, 12);
+  const technologies = selectedWork
+    ? selectedWork.technologies
+    : threadType === 'about'
+      ? aboutContent.technologies
+      : aggregateTechnologies;
+
+  return (
+    <WindowShell
+      title="Masaking CLI"
+      subtitle={`session://${routeLabel}`}
+      statusLabel="CLI"
+      active
+      className="flex h-full min-h-0 flex-col"
+      bodyClassName="flex-1 min-h-0"
+      actions={
+        <span className="rounded-full border border-emerald-300/18 bg-emerald-300/10 px-2.5 py-1 text-[10.5px] uppercase tracking-[0.12em] text-emerald-100/72">
+          readonly
+        </span>
+      }
+    >
+      <div className="flex h-full min-h-0 flex-col bg-[#060a10]">
+        <div className="flex h-10 items-center justify-between border-b border-[#16202c] px-4 font-mono text-[11.5px] text-[#657d96]">
+          <span>/Users/user/development/website/portfolio</span>
+          <span>{threadState.diffEntries.length} staged previews</span>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-auto p-5 font-mono text-[12.5px] leading-6 custom-scrollbar">
+          <CliPrompt command="boot masaking-cli" />
+          <div className="mt-1 text-[#788fa7]">session attached to {routeLabel}</div>
+
+          <CliPrompt command="ls sections" />
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Link to="/" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
+              open top
+            </Link>
+            <Link to="/works" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
+              open works
+            </Link>
+            <Link to="/about" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
+              open about
+            </Link>
+            <Link to="/contact" className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#91bfe3] transition hover:text-white">
+              open contact
+            </Link>
           </div>
 
-          {isDesktop && containerWidth > 0 ? (
-            <>
-              <div
-                style={{ left: `${columnWidths.left}px` }}
-                className="absolute top-10 bottom-0 z-30 hidden w-3 -translate-x-1/2 cursor-col-resize lg:block"
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  setDraggingDivider('left');
-                }}
-              >
-                <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/[0.05]" />
-                <span className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-transparent transition hover:bg-white/[0.16]" />
-              </div>
-              <div
-                style={{ left: `${containerWidth - columnWidths.right}px` }}
-                className="absolute top-10 bottom-0 z-30 hidden w-3 -translate-x-1/2 cursor-col-resize lg:block"
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  setDraggingDivider('right');
-                }}
-              >
-                <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-white/[0.05]" />
-                <span className="absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-transparent transition hover:bg-white/[0.16]" />
-              </div>
-            </>
+          <CliPrompt command={selectedWork ? `open works/${selectedWork.id}` : `open ${threadType}`} />
+          <div className="mt-3 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+            <div className="text-[#d9e9ff]">{threadState.answerTitle}</div>
+            <div className="mt-3 space-y-3 text-[#8da4bb]">
+              {threadState.paragraphs.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+
+          {!selectedWork && threadType === 'works' ? (
+            <div className="mt-4 overflow-hidden rounded-2xl border border-[#16202c] bg-[#0c121a]">
+              {works.map((work) => (
+                <Link
+                  key={work.id}
+                  to={`/work/${work.id}`}
+                  className="flex items-center justify-between border-t border-[#13202d] px-4 py-3 first:border-t-0 transition hover:bg-white/[0.03]"
+                >
+                  <div>
+                    <div className="text-[#d9e9ff]">{work.title}</div>
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">{work.category}</div>
+                  </div>
+                  <span className="text-[#72baf1]">open</span>
+                </Link>
+              ))}
+            </div>
           ) : null}
+
+          {selectedWork ? (
+            <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_240px]">
+              <a
+                href={selectedWork.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="overflow-hidden rounded-2xl border border-[#16202c] bg-[#0c121a] p-3"
+              >
+                <img src={selectedWork.imageUrl} alt={selectedWork.title} className="aspect-[16/10] w-full rounded-xl object-cover" />
+              </a>
+
+              <div className="rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+                <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">technologies</div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {selectedWork.technologies.map((technology) => (
+                    <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
+                      {technology}
+                    </span>
+                  ))}
+                </div>
+                <a
+                  href={selectedWork.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex rounded-full border border-[#1e4969] bg-[#0f2132] px-3 py-1.5 text-[#d9f7ff] transition hover:bg-[#15324a]"
+                >
+                  xdg-open preview
+                </a>
+              </div>
+            </div>
+          ) : null}
+
+          {!selectedWork && threadType === 'about' ? (
+            <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+              <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">stack --list</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {aboutContent.technologies.map((technology) => (
+                  <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
+                    {technology}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {!selectedWork && threadType === 'contact' ? (
+            <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+              <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">network --show</div>
+              <a href={`mailto:${contactContent.email}`} className="mt-3 block text-[#d9f7ff] transition hover:text-white">
+                {contactContent.email}
+              </a>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {contactContent.links.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4] transition hover:text-white"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {!selectedWork && threadType === 'top' ? (
+            <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+              <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">available technologies</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {aggregateTechnologies.map((technology) => (
+                  <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
+                    {technology}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {!selectedWork && threadType !== 'contact' && threadType !== 'about' && threadType !== 'top' ? (
+            <div className="mt-4 rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+              <div className="text-[11px] uppercase tracking-[0.12em] text-[#617b95]">stack --list</div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {technologies.map((technology) => (
+                  <span key={technology} className="rounded-full border border-[#17314a] bg-[#0b1420] px-3 py-1 text-[#9bc3e4]">
+                    {technology}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          <CliPrompt command="git diff --staged --stat" />
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            {threadState.diffEntries.map((entry) => (
+              <div key={entry.fileName} className="rounded-2xl border border-[#16202c] bg-[#0c121a] p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="truncate text-[#d9e9ff]">{entry.fileName}</span>
+                  <span className="text-[#41d599]">+{entry.addedLines.length}</span>
+                </div>
+                <div className="mt-2 text-[#7088a1]">
+                  {entry.kind === 'image' ? 'image preview staged' : entry.addedLines.slice(0, 3).join(' / ')}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
+    </WindowShell>
+  );
+}
+
+function WorkspaceScreen({ threadType = 'works' }) {
+  const { id } = useParams();
+  const selectedWork = threadType === 'works' && id ? works.find((work) => work.id === id) ?? null : null;
+  const effectiveThreadType = selectedWork ? 'works' : threadType;
+  const threadState = getThreadState(effectiveThreadType, selectedWork);
+  const [displayMode, setDisplayMode] = useState(() => (threadType === 'top' && !id ? 'idle' : 'app'));
+
+  return (
+    <div className="relative h-screen w-screen overflow-hidden bg-[#050816] text-white antialiased">
+      <DesktopBackdrop />
+
+      <div className="relative flex h-full flex-col overflow-hidden">
+        <DesktopMenuBar displayMode={displayMode} />
+
+        <div className="relative flex-1 overflow-hidden px-3 pb-24 pt-3 sm:px-5 sm:pt-5 lg:px-6 lg:pt-6">
+          <div className="flex h-full flex-col gap-4 lg:hidden">
+            <div className="shrink-0">
+              <LauncherTerminalWindow
+                threadType={effectiveThreadType}
+                selectedWork={selectedWork}
+                displayMode={displayMode}
+                onSelectMode={setDisplayMode}
+              />
+            </div>
+
+            {displayMode === 'cli' ? (
+              <div className="min-h-0 flex-1">
+                <CliWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
+              </div>
+            ) : null}
+
+            {displayMode === 'app' ? (
+              <div className="min-h-0 flex-1">
+                <AppWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
+              </div>
+            ) : null}
+          </div>
+
+          <div className="relative hidden h-full lg:block">
+            <div className="absolute left-0 top-0 z-20 h-[360px] w-[360px] xl:h-[390px] xl:w-[380px]">
+              <LauncherTerminalWindow
+                threadType={effectiveThreadType}
+                selectedWork={selectedWork}
+                displayMode={displayMode}
+                onSelectMode={setDisplayMode}
+              />
+            </div>
+
+            {displayMode === 'cli' ? (
+              <div className="absolute bottom-0 left-[300px] right-0 top-[72px] xl:left-[328px] xl:top-[86px]">
+                <CliWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
+              </div>
+            ) : null}
+
+            {displayMode === 'app' ? (
+              <div className="absolute bottom-0 left-[286px] right-0 top-[64px] xl:left-[316px] xl:top-[80px]">
+                <AppWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <DesktopDock displayMode={displayMode} onSelectMode={setDisplayMode} />
       </div>
     </div>
   );

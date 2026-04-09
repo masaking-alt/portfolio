@@ -1,5 +1,4 @@
 import {
-  Apple,
   ArrowUp,
   CheckCheck,
   ChevronDown,
@@ -10,13 +9,13 @@ import {
   Filter,
   FolderOpen,
   GitCommitHorizontal,
+  LayoutGrid,
   Mic,
   MoreHorizontal,
   Play,
   Search,
   Settings,
   SquarePen,
-  LayoutGrid,
 } from 'lucide-react';
 import { createElement, useEffect, useRef, useState } from 'react';
 import { Link, Route, Routes, useParams } from 'react-router-dom';
@@ -29,12 +28,26 @@ const navigationItems = [
   { label: 'Automation', icon: Clock3 },
 ];
 
-const homeProject = {
-  title: 'portfolio',
-  category: 'Workspace',
-  description:
-    'AIネイティブなWebアプリとChrome拡張を中心に制作しているポートフォリオです。React + Vite + Tailwind CSS を軸に、Codex デスクトップアプリ風のUIで作品一覧と詳細を1つの画面にまとめています。',
-  technologies: ['React', 'Vite', 'Tailwind CSS', 'React Router', 'lucide-react', 'UI Design'],
+const aboutContent = {
+  title: 'about me',
+  imageUrl: '/profile.jpg',
+  leadLines: ['高知大学で', '情報科学を専攻。', 'バイブコーディングに', '没頭する日々。'],
+  paragraphs: [
+    '昔からプログラミングに興味があり、AIを利用することでそのハードルが下がったため、web制作に挑戦しています。ユーザーにとって魅力的で使いやすいサイトを作れるようになりたいです。',
+    '好きなゲームはモンハンで、特に3DSのシリーズが好きです。好きなアーティストはVaundy。アニメ、マンガ、映画を見るのも好きです。',
+  ],
+  technologies: ['HTML', 'CSS', 'JavaScript (React)', 'Vite', 'React Router', 'ESLint', 'Node.js', 'npm'],
+};
+
+const contactContent = {
+  title: 'reach out',
+  intro: '制作やサイトの相談、感想、コラボの相談などがあれば気軽にご連絡ください。',
+  email: 'banbenjianggui@gmail.com',
+  links: [
+    { label: 'Instagram', href: 'https://www.instagram.com/masa.ki8904?igsh=b3hqMjd6aHdnazJ5' },
+    { label: 'X (Twitter)', href: 'https://x.com/KZOzame1?s=09' },
+    { label: 'BeReal', href: 'https://bere.al/masaki9876' },
+  ],
 };
 
 function padTwoDigits(value) {
@@ -49,7 +62,7 @@ function formatCurrentTimestamp() {
 }
 
 function formatThreadTime(index) {
-  const labels = ['27m', '1h', '3h', 'Yesterday', '3d ago', '1mo', '1mo'];
+  const labels = ['27m', '1h', '3h', 'Yesterday', '3d ago', '1mo', '1mo', '2mo', '2mo', '3mo'];
   return labels[index] ?? '1mo';
 }
 
@@ -61,36 +74,22 @@ function splitTextLines(text, width = 26) {
   return lines;
 }
 
-function buildHomeDiffEntries() {
-  const technologies = Array.from(new Set(works.flatMap((work) => work.technologies))).slice(0, 8);
-
+function buildWorksOverviewDiffEntries() {
   return [
     {
       kind: 'text',
-      fileName: 'README.md',
-      addedLines: [
-        '# portfolio',
-        '',
-        'AIネイティブな開発スタイルで作ったポートフォリオです。',
-        '左にスレッド一覧、中央に会話、右にステージ済み表示を配置しています。',
-        '作品一覧と詳細を同一ワークスペース内で切り替えられます。',
-      ],
+      fileName: 'works.md',
+      addedLines: ['# works', '', ...works.map((work) => `- ${work.title} / ${work.category}`)],
     },
     {
       kind: 'text',
-      fileName: 'workspace.md',
-      addedLines: [
-        '## Layout',
-        '- 左カラム: スレッド一覧風の作品ナビゲーション',
-        '- 中央カラム: 会話ログとフォローアップ入力',
-        '- 右カラム: ステージ済みの差分表示',
-        '- ブラウザ幅いっぱいの可変カラムレイアウト',
-      ],
+      fileName: 'links.json',
+      addedLines: works.map((work) => `"${work.title}": "${work.externalUrl}"`),
     },
     {
       kind: 'text',
       fileName: 'stack.json',
-      addedLines: technologies.map((technology) => `"${technology}"`),
+      addedLines: Array.from(new Set(works.flatMap((work) => work.technologies))).slice(0, 10).map((technology) => `"${technology}"`),
     },
   ];
 }
@@ -100,6 +99,9 @@ function buildWorkDiffEntries(work) {
     {
       kind: 'image',
       fileName: work.imageUrl.split('/').pop() ?? 'preview.png',
+      imageUrl: work.imageUrl,
+      imageAlt: work.title,
+      caption: '+ プレビュー画像を追加',
       addedLines: ['preview updated'],
     },
     {
@@ -115,29 +117,95 @@ function buildWorkDiffEntries(work) {
   ];
 }
 
+function buildAboutDiffEntries() {
+  return [
+    {
+      kind: 'image',
+      fileName: 'profile.jpg',
+      imageUrl: aboutContent.imageUrl,
+      imageAlt: 'プロフィール写真',
+      caption: '+ プロフィール画像を追加',
+      addedLines: ['profile updated'],
+    },
+    {
+      kind: 'text',
+      fileName: 'about.md',
+      addedLines: [...aboutContent.leadLines, '', ...aboutContent.paragraphs],
+    },
+    {
+      kind: 'text',
+      fileName: 'site-stack.json',
+      addedLines: aboutContent.technologies.map((technology) => `"${technology}"`),
+    },
+  ];
+}
+
+function buildContactDiffEntries() {
+  return [
+    {
+      kind: 'text',
+      fileName: 'contact.md',
+      addedLines: ['# reach out', '', contactContent.intro, '', `mail: ${contactContent.email}`],
+    },
+    {
+      kind: 'text',
+      fileName: 'socials.json',
+      addedLines: contactContent.links.map((link) => `"${link.label}": "${link.href}"`),
+    },
+  ];
+}
+
 function getAddedLineCount(diffEntries) {
   return diffEntries.reduce((total, entry) => total + entry.addedLines.length, 0);
 }
 
-function getConversationContent(work) {
-  if (!work) {
+function getThreadState(threadType, selectedWork) {
+  if (selectedWork) {
     return {
-      question: 'このプロジェクトについて説明して',
-      answerTitle: 'このプロジェクトについて説明します。',
+      title: `${selectedWork.title} portfolio`,
+      question: `${selectedWork.title} について説明して`,
+      answerTitle: `${selectedWork.title} について説明します。`,
       paragraphs: [
-        'このポートフォリオは、作品一覧と作品詳細を1つのワークスペース上で切り替える React + Vite 製のフロントエンドです。UI は Codex デスクトップアプリを参照し、ダークテーマ、3カラム構成、差分表示、下部コンポーザーまで含めて再構成しています。',
-        '左カラムはスレッド一覧として各作品へ移動する導線、中央カラムは会話ログとして概要説明、右カラムはステージ済み表示としてプロジェクト説明や技術情報を追加-only の diff 形式で表示します。ブラウザ幅いっぱいに使いながら、カラム幅はドラッグで調整できる設計です。',
+        selectedWork.description,
+        `${selectedWork.category} として公開している作品です。画像から公開ページに移動でき、技術スタックや概要をまとめて確認できます。`,
       ],
+      diffEntries: buildWorkDiffEntries(selectedWork),
+    };
+  }
+
+  if (threadType === 'about') {
+    return {
+      title: 'about portfolio',
+      question: 'about me を見せて',
+      answerTitle: 'about me です。',
+      paragraphs: [
+        'プロフィール、簡単な自己紹介、このサイトを作るのに使った技術をまとめています。',
+      ],
+      diffEntries: buildAboutDiffEntries(),
+    };
+  }
+
+  if (threadType === 'contact') {
+    return {
+      title: 'contact portfolio',
+      question: '連絡先を教えて',
+      answerTitle: '連絡先はこちらです。',
+      paragraphs: [
+        'メールとSNSのリンクをまとめています。気軽にご連絡ください。',
+      ],
+      diffEntries: buildContactDiffEntries(),
     };
   }
 
   return {
-    question: `${work.title} について説明して`,
-    answerTitle: `${work.title} について説明します。`,
+    title: 'works portfolio',
+    question: '制作した作品を見せて',
+    answerTitle: '作品一覧です。',
     paragraphs: [
-      work.description,
-      `${work.category} として公開している作品で、右側のステージ済み欄にはプレビュー画像、説明文、使用技術を追加-only の diff としてまとめています。外部リンクや技術スタックの確認をしやすい構成です。`,
+      'Webアプリ、Chrome拡張、Webサイト、ゲームなど、これまでに制作したものを一覧でまとめています。',
+      '各作品の画像または Open ボタンから公開中のページへ移動できます。',
     ],
+    diffEntries: buildWorksOverviewDiffEntries(),
   };
 }
 
@@ -152,7 +220,24 @@ function clampColumnWidths(widths, containerWidth) {
   return { left, right };
 }
 
-function LeftSidebar({ selectedWorkId, isHomeSelected }) {
+function ThreadGroup({ label, to, isActive, children }) {
+  return (
+    <div className="mt-2">
+      <Link
+        to={to}
+        className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-[12px] font-medium uppercase tracking-[0.08em] transition ${
+          isActive ? 'text-white/64' : 'text-white/30 hover:bg-white/[0.03] hover:text-white/52'
+        }`}
+      >
+        <FolderOpen className={`h-3.5 w-3.5 ${isActive ? 'text-white/44' : 'text-white/24'}`} />
+        <span>{label}</span>
+      </Link>
+      <div className="space-y-0.5">{children}</div>
+    </div>
+  );
+}
+
+function LeftSidebar({ activeThreadType, selectedWorkId }) {
   return (
     <aside className="relative order-4 flex min-h-0 flex-col bg-[#141415] lg:order-none lg:col-start-1 lg:row-[1/3] lg:border-r lg:border-white/[0.05]">
       <div className="flex h-12 items-center justify-between px-3.5">
@@ -198,45 +283,68 @@ function LeftSidebar({ selectedWorkId, isHomeSelected }) {
           <span>portfolio</span>
         </div>
 
-        <Link
-          to="/"
-          className={`ml-[22px] flex items-start justify-between rounded-xl px-3 py-2 transition ${
-            isHomeSelected
-              ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
-              : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
-          }`}
-        >
-          <div className="min-w-0 pr-2">
-            <div className="truncate text-[12.5px] font-medium">このプロジェクトについて説明して</div>
-            <div className={`mt-0.5 truncate text-[11px] ${isHomeSelected ? 'text-white/42' : 'text-white/28'}`}>
-              プロジェクト概要
-            </div>
-          </div>
-          <span className={`pt-0.5 text-[10.5px] ${isHomeSelected ? 'text-white/42' : 'text-white/28'}`}>57m</span>
-        </Link>
-
-        {works.map((work, index) => {
-          const isSelected = selectedWorkId === work.id;
-          return (
-            <Link
-              key={work.id}
-              to={`/work/${work.id}`}
-              className={`ml-[22px] flex items-start justify-between rounded-xl px-3 py-2 transition ${
-                isSelected
-                  ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
-                  : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
-              }`}
-            >
-              <div className="min-w-0 pr-2">
-                <div className="truncate text-[12.5px] font-medium">{work.title}</div>
-                <div className={`mt-0.5 truncate text-[11px] ${isSelected ? 'text-white/42' : 'text-white/28'}`}>
-                  {work.category}
+        <ThreadGroup label="works" to="/works" isActive={activeThreadType === 'works' && !selectedWorkId}>
+          {works.map((work, index) => {
+            const isSelected = activeThreadType === 'works' && selectedWorkId === work.id;
+            return (
+              <Link
+                key={work.id}
+                to={`/work/${work.id}`}
+                className={`ml-[22px] flex items-start justify-between rounded-xl px-3 py-2 transition ${
+                  isSelected
+                    ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
+                    : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
+                }`}
+              >
+                <div className="min-w-0 pr-2">
+                  <div className="truncate text-[12.5px] font-medium">{work.title}</div>
+                  <div className={`mt-0.5 truncate text-[11px] ${isSelected ? 'text-white/42' : 'text-white/28'}`}>
+                    {work.category}
+                  </div>
                 </div>
+                <span className={`pt-0.5 text-[10.5px] ${isSelected ? 'text-white/42' : 'text-white/28'}`}>{formatThreadTime(index)}</span>
+              </Link>
+            );
+          })}
+        </ThreadGroup>
+
+        <ThreadGroup label="about" to="/about" isActive={activeThreadType === 'about'}>
+          <Link
+            to="/about"
+            className={`ml-[22px] flex items-start justify-between rounded-xl px-3 py-2 transition ${
+              activeThreadType === 'about'
+                ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
+                : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
+            }`}
+          >
+            <div className="min-w-0 pr-2">
+              <div className="truncate text-[12.5px] font-medium">about me</div>
+              <div className={`mt-0.5 truncate text-[11px] ${activeThreadType === 'about' ? 'text-white/42' : 'text-white/28'}`}>
+                自己紹介
               </div>
-              <span className={`pt-0.5 text-[10.5px] ${isSelected ? 'text-white/42' : 'text-white/28'}`}>{formatThreadTime(index)}</span>
-            </Link>
-          );
-        })}
+            </div>
+            <span className={`pt-0.5 text-[10.5px] ${activeThreadType === 'about' ? 'text-white/42' : 'text-white/28'}`}>1h</span>
+          </Link>
+        </ThreadGroup>
+
+        <ThreadGroup label="contact" to="/contact" isActive={activeThreadType === 'contact'}>
+          <Link
+            to="/contact"
+            className={`ml-[22px] flex items-start justify-between rounded-xl px-3 py-2 transition ${
+              activeThreadType === 'contact'
+                ? 'bg-white/[0.09] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
+                : 'text-white/62 hover:bg-white/[0.045] hover:text-white/86'
+            }`}
+          >
+            <div className="min-w-0 pr-2">
+              <div className="truncate text-[12.5px] font-medium">reach out</div>
+              <div className={`mt-0.5 truncate text-[11px] ${activeThreadType === 'contact' ? 'text-white/42' : 'text-white/28'}`}>
+                mail, sns
+              </div>
+            </div>
+            <span className={`pt-0.5 text-[10.5px] ${activeThreadType === 'contact' ? 'text-white/42' : 'text-white/28'}`}>3h</span>
+          </Link>
+        </ThreadGroup>
       </div>
 
       <div className="border-t border-white/[0.05] px-3 py-3">
@@ -256,8 +364,8 @@ function MacMenuBar() {
   return (
     <div className="flex h-6 items-center justify-between border-b border-white/[0.05] bg-[#17181a] px-3 text-[12px] text-white/72">
       <div className="flex items-center gap-4">
-        <Apple className="h-3.5 w-3.5 text-white/88" />
-        <span className="font-semibold text-white/90">Codex</span>
+        <img src="/favicon.png" alt="" className="h-3.5 w-3.5 rounded-[3px]" />
+        <span className="font-semibold text-white/90">masaking</span>
         <span>File</span>
         <span>Edit</span>
         <span>View</span>
@@ -379,18 +487,90 @@ function Composer() {
   );
 }
 
-function WorkCenterContent({ work, diffEntries }) {
+function WorksOverviewContent({ diffEntries }) {
+  return (
+    <>
+      <div className="mt-6 space-y-5">
+        {works.map((work) => (
+          <article key={work.id} className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#141415] p-4">
+            <div className="grid gap-5 md:grid-cols-[240px_minmax(0,1fr)]">
+              <a
+                href={work.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block overflow-hidden rounded-xl border border-white/[0.06] bg-black/20"
+              >
+                <img
+                  src={work.imageUrl}
+                  alt={work.title}
+                  className="aspect-[4/3] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                />
+              </a>
+
+              <div className="min-w-0">
+                <div className="text-[12px] tracking-[0.08em] text-white/38">{work.category}</div>
+                <div className="mt-2 flex items-start justify-between gap-4">
+                  <h2 className="text-[22px] font-semibold tracking-[-0.03em] text-white/92">{work.title}</h2>
+                  <a
+                    href={work.externalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 rounded-full border border-white/[0.08] px-3 py-1.5 text-[11.5px] text-white/68 transition hover:bg-white/[0.05] hover:text-white"
+                  >
+                    Open
+                  </a>
+                </div>
+                <p className="mt-3 text-[13.5px] leading-[1.9] text-white/68">{work.description}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {work.technologies.map((technology) => (
+                    <span
+                      key={`${work.id}-${technology}`}
+                      className="rounded-full border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/64"
+                    >
+                      {technology}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <ChangeSummary diffEntries={diffEntries} />
+    </>
+  );
+}
+
+function WorkDetailContent({ work, diffEntries }) {
   return (
     <>
       <div>
         <div className="mx-auto max-w-[680px] overflow-hidden rounded-xl">
-          <img src={work.imageUrl} alt={work.title} className="h-auto max-h-[360px] w-full object-contain" />
+          <a
+            href={work.externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group block overflow-hidden rounded-xl border border-white/[0.06] bg-black/20"
+          >
+            <img src={work.imageUrl} alt={work.title} className="h-auto max-h-[360px] w-full object-contain transition duration-300 group-hover:scale-[1.02]" />
+          </a>
         </div>
       </div>
 
       <div className="mt-6">
         <div className="mb-2 text-[12px] tracking-[0.08em] text-white/38">{work.category}</div>
-        <h2 className="text-[24px] font-semibold tracking-[-0.03em] text-white/92">{work.title}</h2>
+        <div className="flex items-start justify-between gap-4">
+          <h2 className="text-[24px] font-semibold tracking-[-0.03em] text-white/92">{work.title}</h2>
+          <a
+            href={work.externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 rounded-full border border-white/[0.08] px-3 py-1.5 text-[11.5px] text-white/68 transition hover:bg-white/[0.05] hover:text-white"
+          >
+            Open
+          </a>
+        </div>
         <p className="mt-4 text-[13.5px] leading-[1.95] text-white/68">{work.description}</p>
       </div>
 
@@ -413,16 +593,95 @@ function WorkCenterContent({ work, diffEntries }) {
   );
 }
 
-function CenterColumn({ work, diffEntries, scrollRef }) {
-  const conversation = getConversationContent(work);
+function AboutContent({ diffEntries }) {
+  return (
+    <>
+      <div className="mt-6">
+        <div className="grid gap-6 md:grid-cols-[240px_minmax(0,1fr)]">
+          <div className="overflow-hidden rounded-2xl border border-white/[0.06] bg-[#141415] p-3">
+            <img src={aboutContent.imageUrl} alt="プロフィール写真" className="aspect-square w-full rounded-xl object-cover" />
+          </div>
 
+          <div className="min-w-0">
+            <p className="text-[24px] font-semibold leading-[1.5] tracking-[-0.03em] text-white/92">
+              {aboutContent.leadLines.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
+            </p>
+
+            <div className="mt-5 space-y-3">
+              {aboutContent.paragraphs.map((paragraph) => (
+                <p key={paragraph} className="text-[13.5px] leading-[1.95] text-white/68">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <div className="mb-3 text-[12px] tracking-[0.08em] text-white/38">このサイトの技術</div>
+          <div className="flex flex-wrap gap-2.5">
+            {aboutContent.technologies.map((technology) => (
+              <span
+                key={technology}
+                className="rounded-full border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-[12px] text-white/70"
+              >
+                {technology}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <ChangeSummary diffEntries={diffEntries} />
+    </>
+  );
+}
+
+function ContactContent({ diffEntries }) {
+  return (
+    <>
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#141415] p-6">
+        <p className="text-[15px] leading-7 text-white/76">{contactContent.intro}</p>
+        <a
+          href={`mailto:${contactContent.email}`}
+          className="mt-5 inline-flex rounded-full border border-white/[0.08] bg-white/[0.03] px-4 py-2 text-[14px] text-white/84 transition hover:bg-white/[0.06]"
+        >
+          {contactContent.email}
+        </a>
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          {contactContent.links.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-xl border border-white/[0.06] bg-black/10 px-4 py-4 text-[13px] text-white/72 transition hover:bg-white/[0.04] hover:text-white"
+            >
+              <div className="text-[11px] tracking-[0.08em] text-white/34">LINK</div>
+              <div className="mt-2 font-medium">{link.label}</div>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <ChangeSummary diffEntries={diffEntries} />
+    </>
+  );
+}
+
+function CenterColumn({ threadType, selectedWork, threadState, scrollRef }) {
   return (
     <section className="order-2 flex min-h-0 flex-col bg-[#111112] lg:order-none lg:col-start-2 lg:row-start-2 lg:border-r lg:border-white/[0.05]">
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto px-5 pb-8 pt-9 lg:px-10 custom-scrollbar">
         <div className="mx-auto max-w-[820px]">
           <div className="ml-auto flex max-w-[560px] flex-col items-end">
             <div className="rounded-2xl bg-[#2e2e31] px-4 py-3 text-[13.5px] leading-[1.6] text-white/92 shadow-[0_12px_28px_rgba(0,0,0,0.24)]">
-              {conversation.question}
+              {threadState.question}
             </div>
           </div>
 
@@ -432,22 +691,17 @@ function CenterColumn({ work, diffEntries, scrollRef }) {
               <ChevronRight className="h-3 w-3" />
             </div>
 
-            <p className="text-[14px] font-medium leading-7 text-white/86">{conversation.answerTitle}</p>
-            {work ? (
-              <div className="mt-5">
-                <WorkCenterContent work={work} diffEntries={diffEntries} />
-              </div>
-            ) : (
-              <>
-                {conversation.paragraphs.map((paragraph) => (
-                  <p key={paragraph} className="mt-3 pr-10 text-[13.5px] leading-[1.9] text-white/68">
-                    {paragraph}
-                  </p>
-                ))}
+            <p className="text-[14px] font-medium leading-7 text-white/86">{threadState.answerTitle}</p>
+            {threadState.paragraphs.map((paragraph) => (
+              <p key={paragraph} className="mt-3 pr-10 text-[13.5px] leading-[1.9] text-white/68">
+                {paragraph}
+              </p>
+            ))}
 
-                <ChangeSummary diffEntries={diffEntries} />
-              </>
-            )}
+            {selectedWork ? <WorkDetailContent work={selectedWork} diffEntries={threadState.diffEntries} /> : null}
+            {!selectedWork && threadType === 'works' ? <WorksOverviewContent diffEntries={threadState.diffEntries} /> : null}
+            {!selectedWork && threadType === 'about' ? <AboutContent diffEntries={threadState.diffEntries} /> : null}
+            {!selectedWork && threadType === 'contact' ? <ContactContent diffEntries={threadState.diffEntries} /> : null}
           </div>
         </div>
       </div>
@@ -487,7 +741,7 @@ function AddOnlyTextDiff({ lines }) {
   );
 }
 
-function AddOnlyImageDiff({ work }) {
+function AddOnlyImageDiff({ entry }) {
   return (
     <div className="grid grid-cols-[44px_minmax(0,1fr)]">
       <div className="border-r border-white/[0.04] bg-[#102117] px-2 py-3 text-right font-mono text-[11.5px] text-white/28">
@@ -495,15 +749,15 @@ function AddOnlyImageDiff({ work }) {
       </div>
       <div className="bg-[#132418] px-4 py-4">
         <div className="mx-auto aspect-square max-w-[420px] overflow-hidden rounded-lg border border-emerald-400/10 bg-black/20 p-3">
-          <img src={work.imageUrl} alt={work.title} className="h-full w-full object-contain" />
+          <img src={entry.imageUrl} alt={entry.imageAlt} className="h-full w-full object-contain" />
         </div>
-        <div className="mt-3 font-mono text-[11.5px] text-[#89d39a]">+ プレビュー画像を追加</div>
+        <div className="mt-3 font-mono text-[11.5px] text-[#89d39a]">{entry.caption}</div>
       </div>
     </div>
   );
 }
 
-function RightColumn({ work, diffEntries, scrollRef }) {
+function RightColumn({ diffEntries, scrollRef }) {
   const totalAddedLines = getAddedLineCount(diffEntries);
 
   return (
@@ -529,7 +783,7 @@ function RightColumn({ work, diffEntries, scrollRef }) {
           {diffEntries.map((entry) => (
             <section key={entry.fileName} className="overflow-hidden rounded-xl border border-white/[0.06] bg-[#111111]">
               <DiffHeader name={entry.fileName} addedCount={entry.addedLines.length} />
-              {entry.kind === 'image' ? <AddOnlyImageDiff work={work} /> : <AddOnlyTextDiff lines={entry.addedLines} />}
+              {entry.kind === 'image' ? <AddOnlyImageDiff entry={entry} /> : <AddOnlyTextDiff lines={entry.addedLines} />}
             </section>
           ))}
         </div>
@@ -538,15 +792,12 @@ function RightColumn({ work, diffEntries, scrollRef }) {
   );
 }
 
-function WorkspaceScreen() {
+function WorkspaceScreen({ threadType = 'works' }) {
   const { id } = useParams();
-  const selectedWork = works.find((work) => work.id === id) ?? null;
-  const isHomeSelected = !selectedWork;
-  const diffEntries = selectedWork ? buildWorkDiffEntries(selectedWork) : buildHomeDiffEntries();
-  const addedCount = getAddedLineCount(diffEntries);
-  const title = isHomeSelected
-    ? 'Codexアプリ風にポートフォリオ改修 portfolio'
-    : `${selectedWork.title} の説明更新 portfolio`;
+  const selectedWork = threadType === 'works' && id ? works.find((work) => work.id === id) ?? null : null;
+  const effectiveThreadType = selectedWork ? 'works' : threadType;
+  const threadState = getThreadState(effectiveThreadType, selectedWork);
+  const addedCount = getAddedLineCount(threadState.diffEntries);
 
   const containerRef = useRef(null);
   const centerScrollRef = useRef(null);
@@ -630,7 +881,7 @@ function WorkspaceScreen() {
     if (rightScrollRef.current) {
       rightScrollRef.current.scrollTop = 0;
     }
-  }, [id]);
+  }, [threadType, id]);
 
   const gridStyle = isDesktop
     ? { gridTemplateColumns: `${columnWidths.left}px minmax(0, 1fr) ${columnWidths.right}px` }
@@ -646,10 +897,15 @@ function WorkspaceScreen() {
             className="grid h-full w-full grid-cols-1 auto-rows-max lg:grid-cols-[268px_minmax(0,1fr)_864px] lg:grid-rows-[40px_minmax(0,1fr)]"
             style={gridStyle}
           >
-            <LeftSidebar selectedWorkId={selectedWork?.id ?? null} isHomeSelected={isHomeSelected} />
-            <TopBar title={title} addedCount={addedCount} />
-            <CenterColumn work={selectedWork} diffEntries={diffEntries} scrollRef={centerScrollRef} />
-            <RightColumn work={selectedWork ?? { ...homeProject, imageUrl: '/profile.jpg' }} diffEntries={diffEntries} scrollRef={rightScrollRef} />
+            <LeftSidebar activeThreadType={effectiveThreadType} selectedWorkId={selectedWork?.id ?? null} />
+            <TopBar title={threadState.title} addedCount={addedCount} />
+            <CenterColumn
+              threadType={effectiveThreadType}
+              selectedWork={selectedWork}
+              threadState={threadState}
+              scrollRef={centerScrollRef}
+            />
+            <RightColumn diffEntries={threadState.diffEntries} scrollRef={rightScrollRef} />
           </div>
 
           {isDesktop && containerWidth > 0 ? (
@@ -687,8 +943,11 @@ function WorkspaceScreen() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<WorkspaceScreen />} />
-      <Route path="/work/:id" element={<WorkspaceScreen />} />
+      <Route path="/" element={<WorkspaceScreen threadType="works" />} />
+      <Route path="/works" element={<WorkspaceScreen threadType="works" />} />
+      <Route path="/work/:id" element={<WorkspaceScreen threadType="works" />} />
+      <Route path="/about" element={<WorkspaceScreen threadType="about" />} />
+      <Route path="/contact" element={<WorkspaceScreen threadType="contact" />} />
     </Routes>
   );
 }

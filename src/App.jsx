@@ -61,6 +61,27 @@ const HELP_COMMAND_LINES = [
 ];
 const CLI_BOOT_MESSAGE = 'Masaking CLI started.';
 
+function padTwoDigits(value) {
+  return String(value).padStart(2, '0');
+}
+
+function formatCurrentTimestamp() {
+  const now = new Date();
+  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][now.getDay()];
+  const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()];
+  return `${weekday}, ${month} ${now.getDate()} ${padTwoDigits(now.getHours())}:${padTwoDigits(now.getMinutes())}`;
+}
+
+function getModeLabel(displayMode) {
+  if (displayMode === 'cli') {
+    return 'Masaking CLI';
+  }
+  if (displayMode === 'app') {
+    return 'Masaking App';
+  }
+  return 'Terminal standby';
+}
+
 function buildTopDiffEntries() {
   return [
     {
@@ -83,17 +104,6 @@ function buildTopDiffEntries() {
       ],
     },
   ];
-}
-
-function padTwoDigits(value) {
-  return String(value).padStart(2, '0');
-}
-
-function formatCurrentTimestamp() {
-  const now = new Date();
-  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][now.getDay()];
-  const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()];
-  return `${weekday}, ${month} ${now.getDate()} ${padTwoDigits(now.getHours())}:${padTwoDigits(now.getMinutes())}`;
 }
 
 function splitTextLines(text, width = 26) {
@@ -263,52 +273,53 @@ function clampColumnWidths(widths, containerWidth) {
   return { left, right };
 }
 
-function getModeLabel(displayMode) {
-  if (displayMode === 'cli') {
-    return 'Masaking CLI';
-  }
-  if (displayMode === 'app') {
-    return 'Masaking App';
-  }
-  return 'Terminal standby';
-}
-
 function clampValue(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function getMaximizedFrame(viewportWidth, viewportHeight) {
-  const margin = 18;
-  const top = 56;
+function getFallbackDesktopArea(viewportWidth, viewportHeight) {
   return {
-    x: margin,
-    y: top,
-    width: Math.max(320, viewportWidth - margin * 2),
-    height: Math.max(260, viewportHeight - top - margin),
+    width: Math.max(320, viewportWidth - 48),
+    height: Math.max(260, viewportHeight - 96),
+  };
+}
+
+function getMaximizedFrame(containerWidth, containerHeight) {
+  return {
+    x: 0,
+    y: 0,
+    width: Math.max(320, containerWidth),
+    height: Math.max(260, containerHeight),
     isMaximized: true,
   };
 }
 
-function clampWindowFrame(frame, viewportWidth, viewportHeight) {
+function clampWindowFrame(frame, containerWidth, containerHeight) {
+  if (frame.isMaximized) {
+    return {
+      ...frame,
+      ...getMaximizedFrame(containerWidth, containerHeight),
+    };
+  }
+
   const margin = 18;
-  const top = 56;
-  const width = Math.min(frame.width, Math.max(320, viewportWidth - margin * 2));
-  const height = Math.min(frame.height, Math.max(260, viewportHeight - top - margin));
+  const width = Math.min(frame.width, Math.max(320, containerWidth - margin * 2));
+  const height = Math.min(frame.height, Math.max(260, containerHeight - margin * 2));
   return {
     ...frame,
     width,
     height,
-    x: clampValue(frame.x, margin, Math.max(margin, viewportWidth - width - margin)),
-    y: clampValue(frame.y, top, Math.max(top, viewportHeight - height - margin)),
+    x: clampValue(frame.x, 0, Math.max(0, containerWidth - width)),
+    y: clampValue(frame.y, 0, Math.max(0, containerHeight - height)),
   };
 }
 
-function getDesktopWindowFrames(viewportWidth, viewportHeight, mode) {
-  const terminalLargeWidth = Math.min(viewportWidth - 56, 1180);
-  const terminalLargeHeight = Math.min(viewportHeight - 110, 760);
+function getDesktopWindowFrames(containerWidth, containerHeight, mode) {
+  const terminalLargeWidth = Math.min(containerWidth - 36, 1180);
+  const terminalLargeHeight = Math.min(containerHeight - 36, 760);
   const centeredTerminal = {
-    x: Math.max(18, Math.round((viewportWidth - terminalLargeWidth) / 2)),
-    y: Math.max(64, Math.round((viewportHeight - terminalLargeHeight) / 2) - 10),
+    x: Math.max(18, Math.round((containerWidth - terminalLargeWidth) / 2)),
+    y: Math.max(18, Math.round((containerHeight - terminalLargeHeight) / 2) - 10),
     width: terminalLargeWidth,
     height: terminalLargeHeight,
     isMaximized: false,
@@ -317,25 +328,25 @@ function getDesktopWindowFrames(viewportWidth, viewportHeight, mode) {
   const terminalCompact = clampWindowFrame(
     {
       x: 24,
-      y: 78,
-      width: Math.min(460, viewportWidth * 0.3),
-      height: Math.min(380, viewportHeight * 0.44),
+      y: 24,
+      width: Math.min(460, containerWidth * 0.3),
+      height: Math.min(380, containerHeight * 0.44),
       isMaximized: false,
     },
-    viewportWidth,
-    viewportHeight,
+    containerWidth,
+    containerHeight,
   );
 
   const appLarge = clampWindowFrame(
     {
-      x: Math.max(180, Math.round(viewportWidth * 0.18)),
-      y: 104,
-      width: Math.min(viewportWidth - 64, 1180),
-      height: Math.min(viewportHeight - 138, 760),
+      x: Math.max(120, Math.round(containerWidth * 0.14)),
+      y: 24,
+      width: Math.min(containerWidth - 48, 1180),
+      height: Math.min(containerHeight - 48, 760),
       isMaximized: false,
     },
-    viewportWidth,
-    viewportHeight,
+    containerWidth,
+    containerHeight,
   );
 
   if (mode === 'app') {
@@ -351,19 +362,44 @@ function getDesktopWindowFrames(viewportWidth, viewportHeight, mode) {
   };
 }
 
+function WindowControlButtons({ onToggleMaximize, isMaximized = false, className = '' }) {
+  return (
+    <div className={`flex items-center gap-2 ${className}`}>
+      <button
+        type="button"
+        aria-label="close window"
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
+        className="h-3 w-3 rounded-full bg-[#ff5f57]"
+      />
+      <button
+        type="button"
+        aria-label="minimize window"
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
+        className="h-3 w-3 rounded-full bg-[#febc2e]"
+      />
+      <button
+        type="button"
+        aria-label={isMaximized ? 'restore window' : 'maximize window'}
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onToggleMaximize?.();
+        }}
+        className="flex h-3 w-3 items-center justify-center rounded-full bg-[#28c840]"
+      >
+        <span className="h-[5px] w-[5px] rounded-[1px] bg-black/25" />
+      </button>
+    </div>
+  );
+}
+
 function WindowShell({
-  title,
-  subtitle,
-  statusLabel,
-  actions,
   active = false,
   className = '',
   bodyClassName = '',
   onWindowPointerDown,
-  onHeaderPointerDown,
-  onToggleMaximize,
-  canMaximize = false,
-  isMaximized = false,
   children,
 }) {
   return (
@@ -376,63 +412,6 @@ function WindowShell({
       } ${className}`}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_42%)]" />
-
-      <div
-        onPointerDown={onHeaderPointerDown}
-        className={`relative flex h-12 items-center justify-between border-b border-white/[0.08] px-4 ${
-          onHeaderPointerDown ? 'cursor-grab active:cursor-grabbing' : ''
-        }`}
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              aria-label="close window"
-              onPointerDown={(event) => event.stopPropagation()}
-              onClick={(event) => event.stopPropagation()}
-              className="h-3 w-3 rounded-full bg-[#ff5f57] opacity-80"
-            />
-            <button
-              type="button"
-              aria-label="minimize window"
-              onPointerDown={(event) => event.stopPropagation()}
-              onClick={(event) => event.stopPropagation()}
-              className="h-3 w-3 rounded-full bg-[#febc2e] opacity-80"
-            />
-            <button
-              type="button"
-              aria-label={isMaximized ? 'restore window' : 'maximize window'}
-              onPointerDown={(event) => event.stopPropagation()}
-              onClick={(event) => {
-                event.stopPropagation();
-                onToggleMaximize?.();
-              }}
-              className={`flex h-3 w-3 items-center justify-center rounded-full transition ${
-                canMaximize ? 'bg-[#28c840] hover:brightness-110' : 'bg-[#28c840] opacity-80'
-              }`}
-            >
-              {canMaximize ? <span className="h-[5px] w-[5px] rounded-[1px] bg-black/30" /> : null}
-            </button>
-          </div>
-
-          <div className="min-w-0">
-            <div className="truncate text-[12.5px] font-medium text-white/88">{title}</div>
-            {subtitle ? (
-              <div className="truncate text-[10.5px] uppercase tracking-[0.12em] text-white/34">{subtitle}</div>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {statusLabel ? (
-            <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[10.5px] uppercase tracking-[0.12em] text-white/56">
-              {statusLabel}
-            </span>
-          ) : null}
-          {actions}
-        </div>
-      </div>
-
       <div className={`relative min-h-0 ${bodyClassName}`}>{children}</div>
     </section>
   );
@@ -461,34 +440,7 @@ function TerminalWindowShell({
           onHeaderPointerDown ? 'cursor-grab active:cursor-grabbing' : ''
         }`}
       >
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="close window"
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={(event) => event.stopPropagation()}
-            className="h-3 w-3 rounded-full bg-[#ff5f57]"
-          />
-          <button
-            type="button"
-            aria-label="minimize window"
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={(event) => event.stopPropagation()}
-            className="h-3 w-3 rounded-full bg-[#febc2e]"
-          />
-          <button
-            type="button"
-            aria-label={isMaximized ? 'restore window' : 'maximize window'}
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={(event) => {
-              event.stopPropagation();
-              onToggleMaximize?.();
-            }}
-            className="flex h-3 w-3 items-center justify-center rounded-full bg-[#28c840]"
-          >
-            <span className="h-[5px] w-[5px] rounded-[1px] bg-black/25" />
-          </button>
-        </div>
+        <WindowControlButtons onToggleMaximize={onToggleMaximize} isMaximized={isMaximized} />
 
         <div className="min-w-0 flex-1 px-4 text-center text-[11px] font-medium text-white/72">
           <span className="truncate">{title}</span>
@@ -625,7 +577,13 @@ function ThreadGroup({ label, isActive, isOpen, onToggle, children }) {
   );
 }
 
-function LeftSidebar({ activeThreadType, selectedWorkId }) {
+function LeftSidebar({
+  activeThreadType,
+  selectedWorkId,
+  onHeaderPointerDown,
+  onToggleMaximize,
+  isMaximized = false,
+}) {
   const [openGroups, setOpenGroups] = useState(() => ({
     top: true,
     works: true,
@@ -649,19 +607,35 @@ function LeftSidebar({ activeThreadType, selectedWorkId }) {
 
   return (
     <aside className="relative order-4 flex min-h-0 flex-col bg-[#141415] lg:order-none lg:col-start-1 lg:row-[1/3] lg:border-r lg:border-white/[0.05]">
-      <div className="flex h-12 items-center justify-between px-3.5">
-        <div>
-          <div className="text-[10.5px] uppercase tracking-[0.12em] text-white/28">Workspace</div>
-          <div className="mt-1 text-[13px] font-medium text-white/82">Masaking App</div>
+      <div
+        onPointerDown={onHeaderPointerDown}
+        className={`border-b border-white/[0.05] px-3.5 pb-3 pt-3 ${
+          onHeaderPointerDown ? 'cursor-grab active:cursor-grabbing' : ''
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <WindowControlButtons onToggleMaximize={onToggleMaximize} isMaximized={isMaximized} />
+          <div className="flex items-center gap-1 text-white/28">
+            <button
+              type="button"
+              onPointerDown={(event) => event.stopPropagation()}
+              className="rounded-md p-1 hover:bg-white/[0.05]"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onPointerDown={(event) => event.stopPropagation()}
+              className="rounded-md p-1 hover:bg-white/[0.05]"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-1 text-white/28">
-          <button type="button" className="rounded-md p-1 hover:bg-white/[0.05]">
-            <ChevronLeft className="h-3.5 w-3.5" />
-          </button>
-          <button type="button" className="rounded-md p-1 hover:bg-white/[0.05]">
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+        <div className="mt-3">
+          <div className="text-[10.5px] uppercase tracking-[0.12em] text-white/28">Workspace</div>
+          <div className="mt-1 text-[13px] font-medium text-white/82">Masaking App</div>
         </div>
       </div>
 
@@ -1279,21 +1253,13 @@ function AppWindow({ threadType, selectedWork, threadState, shellProps = {} }) {
   const gridStyle = isDesktop
     ? { gridTemplateColumns: `${columnWidths.left}px minmax(0, 1fr) ${columnWidths.right}px` }
     : undefined;
+  const { onHeaderPointerDown, onToggleMaximize, isMaximized } = shellProps;
 
   return (
     <WindowShell
-      title="Masaking App"
-      subtitle={threadState.title}
-      statusLabel="GUI"
       active
       className="flex h-full min-h-0 flex-col"
       bodyClassName="flex-1 min-h-0"
-      canMaximize
-      actions={
-        <span className="rounded-full border border-cyan-300/18 bg-cyan-300/10 px-2.5 py-1 text-[10.5px] uppercase tracking-[0.12em] text-cyan-100/72">
-          workspace
-        </span>
-      }
       {...shellProps}
     >
       <div ref={containerRef} className="relative min-h-0 flex-1 overflow-hidden bg-[#111112]">
@@ -1301,7 +1267,13 @@ function AppWindow({ threadType, selectedWork, threadState, shellProps = {} }) {
           className="grid h-full w-full grid-cols-1 auto-rows-max lg:grid-cols-[268px_minmax(0,1fr)_864px] lg:grid-rows-[40px_minmax(0,1fr)]"
           style={gridStyle}
         >
-          <LeftSidebar activeThreadType={threadType} selectedWorkId={selectedWork?.id ?? null} />
+          <LeftSidebar
+            activeThreadType={threadType}
+            selectedWorkId={selectedWork?.id ?? null}
+            onHeaderPointerDown={onHeaderPointerDown}
+            onToggleMaximize={onToggleMaximize}
+            isMaximized={isMaximized}
+          />
           <TopBar title={threadState.title} addedCount={addedCount} />
           <CenterColumn
             threadType={threadType}
@@ -1356,26 +1328,41 @@ function WorkspaceScreen({
   const effectiveThreadType = selectedWork ? 'works' : threadType;
   const threadState = getThreadState(effectiveThreadType, selectedWork);
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
-  const [viewport, setViewport] = useState(() => ({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  }));
-  const [windowFrames, setWindowFrames] = useState(() => getDesktopWindowFrames(window.innerWidth, window.innerHeight, displayMode));
+  const desktopViewportRef = useRef(null);
+  const [desktopArea, setDesktopArea] = useState(() => getFallbackDesktopArea(window.innerWidth, window.innerHeight));
+  const [windowFrames, setWindowFrames] = useState(() =>
+    getDesktopWindowFrames(desktopArea.width, desktopArea.height, displayMode),
+  );
   const [activeWindow, setActiveWindow] = useState(displayMode === 'app' ? 'app' : 'terminal');
   const [dragState, setDragState] = useState(null);
   const previousDisplayModeRef = useRef(displayMode);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
-      setViewport({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const desktopViewport = desktopViewportRef.current;
+    if (!desktopViewport) {
+      return undefined;
+    }
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      if (entry.contentRect.width <= 0 || entry.contentRect.height <= 0) {
+        return;
+      }
+
+      setDesktopArea({
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
+      });
+    });
+
+    resizeObserver.observe(desktopViewport);
+    return () => resizeObserver.disconnect();
   }, []);
 
   useEffect(() => {
@@ -1385,11 +1372,11 @@ function WorkspaceScreen({
     }
 
     if (previousDisplayModeRef.current !== displayMode) {
-      setWindowFrames(getDesktopWindowFrames(viewport.width, viewport.height, displayMode));
+      setWindowFrames(getDesktopWindowFrames(desktopArea.width, desktopArea.height, displayMode));
       setActiveWindow(displayMode === 'app' ? 'app' : 'terminal');
       previousDisplayModeRef.current = displayMode;
     }
-  }, [displayMode, isDesktop, viewport.height, viewport.width]);
+  }, [desktopArea.height, desktopArea.width, displayMode, isDesktop]);
 
   useEffect(() => {
     if (!isDesktop) {
@@ -1397,10 +1384,10 @@ function WorkspaceScreen({
     }
 
     setWindowFrames((currentFrames) => ({
-      terminal: clampWindowFrame(currentFrames.terminal, viewport.width, viewport.height),
-      app: clampWindowFrame(currentFrames.app, viewport.width, viewport.height),
+      terminal: clampWindowFrame(currentFrames.terminal, desktopArea.width, desktopArea.height),
+      app: clampWindowFrame(currentFrames.app, desktopArea.width, desktopArea.height),
     }));
-  }, [isDesktop, viewport.height, viewport.width]);
+  }, [desktopArea.height, desktopArea.width, isDesktop]);
 
   useEffect(() => {
     if (!isDesktop || !dragState) {
@@ -1408,6 +1395,12 @@ function WorkspaceScreen({
     }
 
     const handlePointerMove = (event) => {
+      const desktopViewport = desktopViewportRef.current;
+      if (!desktopViewport) {
+        return;
+      }
+
+      const viewportRect = desktopViewport.getBoundingClientRect();
       setWindowFrames((currentFrames) => {
         const currentFrame = currentFrames[dragState.key];
         if (!currentFrame || currentFrame.isMaximized) {
@@ -1419,11 +1412,11 @@ function WorkspaceScreen({
           [dragState.key]: clampWindowFrame(
             {
               ...currentFrame,
-              x: event.clientX - dragState.offsetX,
-              y: event.clientY - dragState.offsetY,
+              x: event.clientX - viewportRect.left - dragState.offsetX,
+              y: event.clientY - viewportRect.top - dragState.offsetY,
             },
-            viewport.width,
-            viewport.height,
+            desktopArea.width,
+            desktopArea.height,
           ),
         };
       });
@@ -1437,7 +1430,7 @@ function WorkspaceScreen({
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [dragState, isDesktop, viewport.height, viewport.width]);
+  }, [desktopArea.height, desktopArea.width, dragState, isDesktop]);
 
   function focusWindow(windowKey) {
     setActiveWindow(windowKey);
@@ -1448,17 +1441,19 @@ function WorkspaceScreen({
       return;
     }
 
+    const desktopViewport = desktopViewportRef.current;
     const frame = windowFrames[windowKey];
-    if (!frame || frame.isMaximized) {
+    if (!desktopViewport || !frame || frame.isMaximized) {
       return;
     }
 
+    const viewportRect = desktopViewport.getBoundingClientRect();
     event.preventDefault();
     setActiveWindow(windowKey);
     setDragState({
       key: windowKey,
-      offsetX: event.clientX - frame.x,
-      offsetY: event.clientY - frame.y,
+      offsetX: event.clientX - viewportRect.left - frame.x,
+      offsetY: event.clientY - viewportRect.top - frame.y,
     });
   }
 
@@ -1483,8 +1478,8 @@ function WorkspaceScreen({
                 ...frame.restoreFrame,
                 isMaximized: false,
               },
-              viewport.width,
-              viewport.height,
+              desktopArea.width,
+              desktopArea.height,
             ),
             restoreFrame: null,
           },
@@ -1494,7 +1489,7 @@ function WorkspaceScreen({
       return {
         ...currentFrames,
         [windowKey]: {
-          ...getMaximizedFrame(viewport.width, viewport.height),
+          ...getMaximizedFrame(desktopArea.width, desktopArea.height),
           restoreFrame: {
             x: frame.x,
             y: frame.y,
@@ -1521,6 +1516,7 @@ function WorkspaceScreen({
     onHeaderPointerDown: (event) => startWindowDrag('app', event),
     onToggleMaximize: () => toggleWindowMaximize('app'),
   };
+  const hasMaximizedWindow = Boolean(windowFrames.terminal?.isMaximized || windowFrames.app?.isMaximized);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black text-white antialiased">
@@ -1529,7 +1525,11 @@ function WorkspaceScreen({
       <div className="relative flex h-full flex-col overflow-hidden">
         <DesktopMenuBar displayMode={displayMode} />
 
-        <div className="relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 lg:px-6 lg:pt-6">
+        <div
+          className={`relative flex-1 overflow-hidden ${
+            hasMaximizedWindow ? 'px-0 pt-0' : 'px-3 pt-3 sm:px-5 sm:pt-5 lg:px-6 lg:pt-6'
+          }`}
+        >
           <div className="flex h-full flex-col gap-4 lg:hidden">
             {displayMode === 'cli' ? (
               <div className="min-h-0 flex-1">
@@ -1568,7 +1568,7 @@ function WorkspaceScreen({
             )}
           </div>
 
-          <div className="relative hidden h-full lg:block">
+          <div ref={desktopViewportRef} className="relative hidden h-full lg:block">
             <div
               style={{
                 left: `${windowFrames.terminal.x}px`,

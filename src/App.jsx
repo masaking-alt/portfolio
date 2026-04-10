@@ -18,7 +18,7 @@ import {
   SquarePen,
 } from 'lucide-react';
 import { createElement, useEffect, useRef, useState } from 'react';
-import { Link, Route, Routes, useParams } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { works } from './works';
 
 const navigationItems = [
@@ -50,16 +50,18 @@ const contactContent = {
   ],
 };
 
-const AVAILABLE_COMMANDS_TEXT = 'available commands: "masaking" , "masaking app" , "help" , "clear"';
+const AVAILABLE_COMMANDS_TEXT = '利用可能コマンド: "masaking" , "masaking app" , "help" , "clear"';
+const CLI_COMMANDS_TEXT = 'CLI内コマンド: "/top" , "/works" , "/about" , "/contact"';
 const TERMINAL_PROMPT = 'Visitor@MasakingPortfolio >';
 const HELP_COMMAND_LINES = [
   AVAILABLE_COMMANDS_TEXT,
-  'masaking: Masaking CLIを起動',
-  'masaking app: Masaking Appを起動',
+  'masaking: Masaking CLI を起動',
+  'masaking app: Masaking App を起動',
   'help: コマンド一覧を表示',
   'clear: ターミナルをクリア',
 ];
-const CLI_BOOT_MESSAGE = 'Masaking CLI started.';
+const CLI_BOOT_MESSAGE = 'Masaking CLI を起動しました。';
+const APP_BOOT_MESSAGE = 'Masaking App を起動しました。';
 
 function padTwoDigits(value) {
   return String(value).padStart(2, '0');
@@ -112,6 +114,58 @@ function splitTextLines(text, width = 26) {
     lines.push(text.slice(index, index + width));
   }
   return lines;
+}
+
+function createTerminalEntries(lines, kind = 'system') {
+  return lines.map((text) => ({ kind, text }));
+}
+
+function getCliPathFromCommand(command) {
+  if (command === '/top') {
+    return '/';
+  }
+  if (command === '/works') {
+    return '/works';
+  }
+  if (command === '/about') {
+    return '/about';
+  }
+  if (command === '/contact') {
+    return '/contact';
+  }
+  return null;
+}
+
+function getCliOutputLines(pathname) {
+  if (pathname === '/works') {
+    return [
+      '[works]',
+      ...works.map((work, index) => `${String(index + 1).padStart(2, '0')}. ${work.title} | ${work.category}`),
+    ];
+  }
+
+  if (pathname === '/about') {
+    return [
+      '[about]',
+      ...aboutContent.leadLines,
+      ...aboutContent.paragraphs.flatMap((paragraph) => splitTextLines(paragraph, 56)),
+    ];
+  }
+
+  if (pathname === '/contact') {
+    return [
+      '[contact]',
+      ...splitTextLines(contactContent.intro, 56),
+      `mail: ${contactContent.email}`,
+      ...contactContent.links.map((link) => `${link.label}: ${link.href}`),
+    ];
+  }
+
+  return [
+    '[top]',
+    'masaking portfolio へようこそ。',
+    CLI_COMMANDS_TEXT,
+  ];
 }
 
 function buildWorksOverviewDiffEntries() {
@@ -412,7 +466,7 @@ function WindowShell({
       } ${className}`}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_42%)]" />
-      <div className={`relative min-h-0 ${bodyClassName}`}>{children}</div>
+      <div className={`relative flex min-h-0 flex-col ${bodyClassName}`}>{children}</div>
     </section>
   );
 }
@@ -528,7 +582,7 @@ function LauncherTerminalWindow({
   onTerminalSubmit,
   shellProps = {},
 }) {
-  const terminalTitle = 'portfolio — masaking@macbook — .../website/portfolio — zsh — 80x24';
+  const terminalTitle = 'Visitor@MasakingPortfolio ~ website/portfolio';
   const launcherScrollRef = useRef(null);
 
   useEffect(() => {
@@ -606,7 +660,7 @@ function LeftSidebar({
   }
 
   return (
-    <aside className="relative order-4 flex min-h-0 flex-col bg-[#141415] lg:order-none lg:col-start-1 lg:row-[1/3] lg:border-r lg:border-white/[0.05]">
+    <aside className="relative order-4 flex min-h-0 flex-col overflow-hidden bg-[#141415] lg:order-none lg:col-start-1 lg:row-[1/3] lg:border-r lg:border-white/[0.05]">
       <div
         onPointerDown={onHeaderPointerDown}
         className={`border-b border-white/[0.05] px-3.5 pb-3 pt-3 ${
@@ -809,7 +863,7 @@ function ChangeSummary({ diffEntries }) {
 
 function Composer() {
   return (
-    <div className="px-5 pb-6 pt-2 lg:px-10">
+    <div className="shrink-0 border-t border-white/[0.05] bg-[#111112] px-5 pb-6 pt-3 lg:px-10">
       <div className="mx-auto max-w-[820px]">
         <div className="rounded-[22px] border border-white/[0.08] bg-[#2d2d30] px-4 py-2.5 shadow-[0_12px_32px_rgba(0,0,0,0.28)]">
           <div className="min-h-[52px] px-1 pt-0.5 text-[14px] text-white/26">Ask for follow-up changes</div>
@@ -869,12 +923,12 @@ function WorksOverviewContent({ diffEntries }) {
                 href={work.externalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group block overflow-hidden rounded-xl border border-white/[0.06] bg-black/20"
+                className="group flex items-center justify-center rounded-xl border border-white/[0.06] bg-black/20 p-4"
               >
                 <img
                   src={work.imageUrl}
                   alt={work.title}
-                  className="aspect-[4/3] w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                  className="block h-auto max-h-[220px] w-auto max-w-full object-contain transition duration-300 group-hover:scale-[1.02]"
                 />
               </a>
 
@@ -917,14 +971,18 @@ function WorkDetailContent({ work, diffEntries }) {
   return (
     <>
       <div>
-        <div className="mx-auto max-w-[680px] overflow-hidden rounded-xl">
+        <div className="mx-auto flex justify-center">
           <a
             href={work.externalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group block overflow-hidden rounded-xl border border-white/[0.06] bg-black/20"
+            className="group flex items-center justify-center rounded-xl border border-white/[0.06] bg-black/20 p-4"
           >
-            <img src={work.imageUrl} alt={work.title} className="h-auto max-h-[360px] w-full object-contain transition duration-300 group-hover:scale-[1.02]" />
+            <img
+              src={work.imageUrl}
+              alt={work.title}
+              className="block h-auto max-h-[420px] w-auto max-w-full object-contain transition duration-300 group-hover:scale-[1.02]"
+            />
           </a>
         </div>
       </div>
@@ -1047,8 +1105,8 @@ function ContactContent({ diffEntries }) {
 
 function CenterColumn({ threadType, selectedWork, threadState, scrollRef }) {
   return (
-    <section className="order-2 flex min-h-0 flex-col bg-[#111112] lg:order-none lg:col-start-2 lg:row-start-2 lg:border-r lg:border-white/[0.05]">
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-auto px-5 pb-8 pt-9 lg:px-10 custom-scrollbar">
+    <section className="order-2 flex min-h-0 flex-col overflow-hidden bg-[#111112] lg:order-none lg:col-start-2 lg:row-start-2 lg:border-r lg:border-white/[0.05]">
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 pb-10 pt-9 lg:px-10 custom-scrollbar">
         <div className="mx-auto max-w-[820px]">
           <div className="ml-auto flex max-w-[560px] flex-col items-end">
             <div className="rounded-2xl bg-[#2e2e31] px-4 py-3 text-[13.5px] leading-[1.6] text-white/92 shadow-[0_12px_28px_rgba(0,0,0,0.24)]">
@@ -1119,8 +1177,8 @@ function AddOnlyImageDiff({ entry }) {
         1
       </div>
       <div className="bg-[#132418] px-4 py-4">
-        <div className="mx-auto aspect-square max-w-[420px] overflow-hidden rounded-lg border border-emerald-400/10 bg-black/20 p-3">
-          <img src={entry.imageUrl} alt={entry.imageAlt} className="h-full w-full object-contain" />
+        <div className="mx-auto flex max-w-[420px] items-center justify-center rounded-lg border border-emerald-400/10 bg-black/20 p-3">
+          <img src={entry.imageUrl} alt={entry.imageAlt} className="block h-auto max-h-[420px] w-auto max-w-full object-contain" />
         </div>
         <div className="mt-3 font-mono text-[11.5px] text-[#89d39a]">{entry.caption}</div>
       </div>
@@ -1132,7 +1190,7 @@ function RightColumn({ diffEntries, scrollRef }) {
   const totalAddedLines = getAddedLineCount(diffEntries);
 
   return (
-    <aside className="order-3 flex min-h-0 flex-col bg-[#121212] lg:order-none lg:col-start-3 lg:row-start-2">
+    <aside className="order-3 flex min-h-0 flex-col overflow-hidden bg-[#121212] lg:order-none lg:col-start-3 lg:row-start-2">
       <div className="flex h-10 items-center justify-between border-b border-white/[0.05] px-3">
         <div className="flex items-center gap-1.5 text-white/80">
           <ChevronRight className="h-3.5 w-3.5 text-white/38" />
@@ -1262,7 +1320,7 @@ function AppWindow({ threadType, selectedWork, threadState, shellProps = {} }) {
       bodyClassName="flex-1 min-h-0"
       {...shellProps}
     >
-      <div ref={containerRef} className="relative min-h-0 flex-1 overflow-hidden bg-[#111112]">
+      <div ref={containerRef} className="relative h-full min-h-0 flex-1 overflow-hidden bg-[#111112]">
         <div
           className="grid h-full w-full grid-cols-1 auto-rows-max lg:grid-cols-[268px_minmax(0,1fr)_864px] lg:grid-rows-[40px_minmax(0,1fr)]"
           style={gridStyle}
@@ -1619,39 +1677,50 @@ function WorkspaceScreen({
 }
 
 function App() {
-  const [displayMode, setDisplayMode] = useState(() => (window.location.pathname === '/' ? 'idle' : 'app'));
+  const navigate = useNavigate();
+  const [displayMode, setDisplayMode] = useState('idle');
+  const [hasEnteredWorkspace, setHasEnteredWorkspace] = useState(false);
   const [terminalCommand, setTerminalCommand] = useState('');
   const [terminalLog, setTerminalLog] = useState(() => [
     { kind: 'system', text: AVAILABLE_COMMANDS_TEXT },
   ]);
 
+  function appendTerminalLines(lines, kind = 'system') {
+    setTerminalLog((currentLog) => [
+      ...currentLog,
+      ...createTerminalEntries(lines, kind),
+    ]);
+  }
+
   function handleTerminalSubmit(event) {
     event.preventDefault();
     const rawCommand = terminalCommand.trim();
-    const normalizedCommand = terminalCommand.trim().toLowerCase().replace(/\s+/g, ' ');
-    setTerminalLog((currentLog) => [...currentLog, { kind: 'command', text: rawCommand }]);
+    const normalizedCommand = rawCommand.toLowerCase().replace(/\s+/g, ' ');
     setTerminalCommand('');
 
     if (!normalizedCommand) {
       return;
     }
 
+    setTerminalLog((currentLog) => [...currentLog, { kind: 'command', text: rawCommand }]);
+
     if (normalizedCommand === 'masaking') {
+      setHasEnteredWorkspace(true);
       setDisplayMode('cli');
-      setTerminalLog((currentLog) => [...currentLog, { kind: 'system', text: CLI_BOOT_MESSAGE }]);
+      navigate('/');
+      appendTerminalLines([CLI_BOOT_MESSAGE, CLI_COMMANDS_TEXT, ...getCliOutputLines('/')]);
       return;
     }
 
     if (normalizedCommand === 'masaking app') {
+      setHasEnteredWorkspace(true);
       setDisplayMode('app');
+      appendTerminalLines([APP_BOOT_MESSAGE]);
       return;
     }
 
     if (normalizedCommand === 'help') {
-      setTerminalLog((currentLog) => [
-        ...currentLog,
-        ...HELP_COMMAND_LINES.map((line) => ({ kind: 'system', text: line })),
-      ]);
+      appendTerminalLines(hasEnteredWorkspace ? [...HELP_COMMAND_LINES, CLI_COMMANDS_TEXT] : HELP_COMMAND_LINES);
       return;
     }
 
@@ -1660,7 +1729,36 @@ function App() {
       return;
     }
 
-    setTerminalLog((currentLog) => [...currentLog, { kind: 'error', text: `command not found: ${rawCommand}` }]);
+    const cliPath = getCliPathFromCommand(normalizedCommand);
+    if (cliPath) {
+      if (!hasEnteredWorkspace) {
+        appendTerminalLines(['先に "masaking" または "masaking app" を実行してください。'], 'error');
+        return;
+      }
+
+      navigate(cliPath);
+      appendTerminalLines(getCliOutputLines(cliPath));
+      return;
+    }
+
+    appendTerminalLines([`コマンドが見つかりません: ${rawCommand}`], 'error');
+  }
+
+  function renderWorkspaceRoute(threadType) {
+    if (!hasEnteredWorkspace) {
+      return <Navigate to="/" replace />;
+    }
+
+    return (
+      <WorkspaceScreen
+        threadType={threadType}
+        displayMode={displayMode}
+        terminalCommand={terminalCommand}
+        terminalLog={terminalLog}
+        onTerminalCommandChange={setTerminalCommand}
+        onTerminalSubmit={handleTerminalSubmit}
+      />
+    );
   }
 
   return (
@@ -1680,55 +1778,19 @@ function App() {
       />
       <Route
         path="/works"
-        element={
-          <WorkspaceScreen
-            threadType="works"
-            displayMode={displayMode}
-            terminalCommand={terminalCommand}
-            terminalLog={terminalLog}
-            onTerminalCommandChange={setTerminalCommand}
-            onTerminalSubmit={handleTerminalSubmit}
-          />
-        }
+        element={renderWorkspaceRoute('works')}
       />
       <Route
         path="/work/:id"
-        element={
-          <WorkspaceScreen
-            threadType="works"
-            displayMode={displayMode}
-            terminalCommand={terminalCommand}
-            terminalLog={terminalLog}
-            onTerminalCommandChange={setTerminalCommand}
-            onTerminalSubmit={handleTerminalSubmit}
-          />
-        }
+        element={renderWorkspaceRoute('works')}
       />
       <Route
         path="/about"
-        element={
-          <WorkspaceScreen
-            threadType="about"
-            displayMode={displayMode}
-            terminalCommand={terminalCommand}
-            terminalLog={terminalLog}
-            onTerminalCommandChange={setTerminalCommand}
-            onTerminalSubmit={handleTerminalSubmit}
-          />
-        }
+        element={renderWorkspaceRoute('about')}
       />
       <Route
         path="/contact"
-        element={
-          <WorkspaceScreen
-            threadType="contact"
-            displayMode={displayMode}
-            terminalCommand={terminalCommand}
-            terminalLog={terminalLog}
-            onTerminalCommandChange={setTerminalCommand}
-            onTerminalSubmit={handleTerminalSubmit}
-          />
-        }
+        element={renderWorkspaceRoute('contact')}
       />
     </Routes>
   );

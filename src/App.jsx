@@ -18,7 +18,7 @@ import {
   SquarePen,
 } from 'lucide-react';
 import { createElement, useEffect, useRef, useState } from 'react';
-import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { works } from './works';
 
 const navigationItems = [
@@ -50,18 +50,18 @@ const contactContent = {
   ],
 };
 
-const AVAILABLE_COMMANDS_TEXT = '利用可能コマンド: "masaking" , "masaking app" , "help" , "clear"';
-const CLI_COMMANDS_TEXT = 'CLI内コマンド: "/top" , "/works" , "/about" , "/contact"';
+const AVAILABLE_COMMANDS_TEXT = 'available commands: "masaking" , "masaking app" , "help" , "clear"';
+const CLI_COMMANDS_TEXT = 'CLI commands: "/top" , "/works" , "/about" , "/contact"';
 const TERMINAL_PROMPT = 'Visitor@MasakingPortfolio >';
 const HELP_COMMAND_LINES = [
   AVAILABLE_COMMANDS_TEXT,
-  'masaking: Masaking CLI を起動',
-  'masaking app: Masaking App を起動',
-  'help: コマンド一覧を表示',
-  'clear: ターミナルをクリア',
+  'masaking: launch Masaking CLI',
+  'masaking app: launch Masaking App',
+  'help: show command list',
+  'clear: clear terminal and return to top',
 ];
-const CLI_BOOT_MESSAGE = 'Masaking CLI を起動しました。';
-const APP_BOOT_MESSAGE = 'Masaking App を起動しました。';
+const CLI_BOOT_MESSAGE = 'Masaking CLI started.';
+const APP_BOOT_MESSAGE = 'Masaking App started.';
 
 function padTwoDigits(value) {
   return String(value).padStart(2, '0');
@@ -163,7 +163,7 @@ function getCliOutputLines(pathname) {
 
   return [
     '[top]',
-    'masaking portfolio へようこそ。',
+    'Welcome to masaking portfolio.',
     CLI_COMMANDS_TEXT,
   ];
 }
@@ -1104,6 +1104,8 @@ function ContactContent({ diffEntries }) {
 }
 
 function CenterColumn({ threadType, selectedWork, threadState, scrollRef }) {
+  const isWorkDetail = Boolean(selectedWork);
+
   return (
     <section className="order-2 flex min-h-0 flex-col overflow-hidden bg-[#111112] lg:order-none lg:col-start-2 lg:row-start-2 lg:border-r lg:border-white/[0.05]">
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 pb-10 pt-9 lg:px-10 custom-scrollbar">
@@ -1120,12 +1122,16 @@ function CenterColumn({ threadType, selectedWork, threadState, scrollRef }) {
               <ChevronRight className="h-3 w-3" />
             </div>
 
-            <p className="text-[14px] font-medium leading-7 text-white/86">{threadState.answerTitle}</p>
-            {threadState.paragraphs.map((paragraph) => (
-              <p key={paragraph} className="mt-3 pr-10 text-[13.5px] leading-[1.9] text-white/68">
-                {paragraph}
-              </p>
-            ))}
+            {!isWorkDetail ? (
+              <>
+                <p className="text-[14px] font-medium leading-7 text-white/86">{threadState.answerTitle}</p>
+                {threadState.paragraphs.map((paragraph) => (
+                  <p key={paragraph} className="mt-3 pr-10 text-[13.5px] leading-[1.9] text-white/68">
+                    {paragraph}
+                  </p>
+                ))}
+              </>
+            ) : null}
 
             {selectedWork ? <WorkDetailContent work={selectedWork} diffEntries={threadState.diffEntries} /> : null}
             {!selectedWork && threadType === 'works' ? <WorksOverviewContent diffEntries={threadState.diffEntries} /> : null}
@@ -1726,13 +1732,14 @@ function App() {
 
     if (normalizedCommand === 'clear') {
       setTerminalLog([]);
+      navigate('/');
       return;
     }
 
     const cliPath = getCliPathFromCommand(normalizedCommand);
     if (cliPath) {
       if (!hasEnteredWorkspace) {
-        appendTerminalLines(['先に "masaking" または "masaking app" を実行してください。'], 'error');
+        appendTerminalLines(['Run "masaking" or "masaking app" first.'], 'error');
         return;
       }
 
@@ -1741,14 +1748,10 @@ function App() {
       return;
     }
 
-    appendTerminalLines([`コマンドが見つかりません: ${rawCommand}`], 'error');
+    appendTerminalLines([`command not found: ${rawCommand}`], 'error');
   }
 
   function renderWorkspaceRoute(threadType) {
-    if (!hasEnteredWorkspace) {
-      return <Navigate to="/" replace />;
-    }
-
     return (
       <WorkspaceScreen
         threadType={threadType}

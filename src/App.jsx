@@ -51,17 +51,28 @@ const contactContent = {
 };
 
 const MASAKING_LOGO_LINES = [
+" ██████   ██████                             █████       ███                     ",
+"░░██████ ██████                             ░░███       ░░░                      ",
+" ░███░█████░███   ██████    █████   ██████   ░███ █████ ████  ████████    ███████",
+" ░███░░███ ░███  ░░░░░███  ███░░   ░░░░░███  ░███░░███ ░░███ ░░███░░███  ███░░███",
+" ░███ ░░░  ░███   ███████ ░░█████   ███████  ░██████░   ░███  ░███ ░███ ░███ ░███",
+" ░███      ░███  ███░░███  ░░░░███ ███░░███  ░███░░███  ░███  ░███ ░███ ░███ ░███",
+" █████     █████░░████████ ██████ ░░████████ ████ █████ █████ ████ █████░░███████",
+"░░░░░     ░░░░░  ░░░░░░░░ ░░░░░░   ░░░░░░░░ ░░░░ ░░░░░ ░░░░░ ░░░░ ░░░░░  ░░░░░███",
+"                                                                         ███ ░███",
+"                                                                        ░░██████ ",
+"                                                                         ░░░░░░  ",
 "      ___           ___           ___           ___           ___                       ___           ___     ",
-"     /__/\         /  /\         /  /\         /  /\         /__/|        ___          /__/\         /  /\    ",
-"    |  |::\       /  /::\       /  /:/_       /  /::\       |  |:|       /  /\         \  \:\       /  /:/_   ",
-"    |  |:|:\     /  /:/\:\     /  /:/ /\     /  /:/\:\      |  |:|      /  /:/          \  \:\     /  /:/ /\  ",
-"  __|__|:|\:\   /  /:/~/::\   /  /:/ /::\   /  /:/~/::\   __|  |:|     /__/::\      _____\__\:\   /  /:/_/::\ ",
-" /__/::::| \:\ /__/:/ /:/\:\ /__/:/ /:/\:\ /__/:/ /:/\:\ /__/\_|:|____ \__\/\:\__  /__/::::::::\ /__/:/__\/\:\ ",
-" \  \:\~~\__\/ \  \:\/:/__\/ \  \:\/:/~/:/ \  \:\/:/__\/ \  \:\/:::::/    \  \:\/\ \  \:\~~\~~\/ \  \:\ /~~/:/",
-"  \  \:\        \  \::/       \  \::/ /:/   \  \::/       \  \::/~~~~      \__\::/  \  \:\  ~~~   \  \:\  /:/ ",
-"   \  \:\        \  \:\        \__\/ /:/     \  \:\        \  \:\          /__/:/    \  \:\        \  \:\/:/  ",
-"    \  \:\        \  \:\         /__/:/       \  \:\        \  \:\         \__\/      \  \:\        \  \::/   ",
-"     \__\/         \__\/         \__\/         \__\/         \__\/                     \__\/         \__\/    "
+"     /__/\\         /  /\\         /  /\\         /  /\\         /__/|        ___          /__/\\         /  /\\    ",
+"    |  |::\\       /  /::\\       /  /:/_       /  /::\\       |  |:|       /  /\\         \\  \\:\\       /  /:/_   ",
+"    |  |:|:\\     /  /:/\\:\\     /  /:/ /\\     /  /:/\\:\\      |  |:|      /  /:/          \\  \\:\\     /  /:/ /\\  ",
+"  __|__|:|\\:\\   /  /:/~/::\\   /  /:/ /::\\   /  /:/~/::\\   __|  |:|     /__/::\\      _____\\__\\:\\   /  /:/_/::\\ ",
+" /__/::::| \\:\\ /__/:/ /:/\\:\\ /__/:/ /:/\\:\\ /__/:/ /:/\\:\\ /__/\\_|:|____ \\__\\/\\:\\__  /__/::::::::\\ /__/:/__\\/\\:\\",
+" \\  \\:\\~~\\__\\/ \\  \\:\\/:/__\\/ \\  \\:\\/:/~/:/ \\  \\:\\/:/__\\/ \\  \\:\\/:::::/    \\  \\:\\/\\ \\  \\:\\~~\\~~\\/ \\  \\:\\ /~~/:/",
+"  \\  \\:\\        \\  \\::/       \\  \\::/ /:/   \\  \\::/       \\  \\::/~~~~      \\__\\::/  \\  \\:\\  ~~~   \\  \\:\\  /:/ ",
+"   \\  \\:\\        \\  \\:\\        \\__\\/ /:/     \\  \\:\\        \\  \\:\\          /__/:/    \\  \\:\\        \\  \\:\\/:/  ",
+"    \\  \\:\\        \\  \\:\\         /__/:/       \\  \\:\\        \\  \\:\\         \\__\\/      \\  \\:\\        \\  \\::/   ",
+"     \\__\\/         \\__\\/         \\__\\/         \\__\\/         \\__\\/                     \\__\\/         \\__\\/    "
 ];
 
 const PROFILE_ASCII_LINES = [
@@ -127,6 +138,17 @@ const PROFILE_ASCII_LINES = [
 const AVAILABLE_COMMANDS_TEXT = 'available commands: "masaking" , "masaking app" , "help" , "clear"';
 const CLI_COMMANDS_TEXT = 'CLI commands: "/top" , "/works" , "/about" , "/contact"';
 const TERMINAL_PROMPT = 'Visitor@MasakingPortfolio >';
+const CLI_HOME_OVERVIEW_ROWS = [
+  ['Mode', 'Terminal-first portfolio'],
+  ['Focus', 'Works, profile, contact'],
+  ['Stack', 'React, Vite, Router'],
+];
+const CLI_HOME_COMMAND_ROWS = [
+  ['/top', 'Reload this home screen'],
+  ['/works', 'List selected projects'],
+  ['/about', 'Show profile summary'],
+  ['/contact', 'Show contact details'],
+];
 const HELP_COMMAND_LINES = [
   AVAILABLE_COMMANDS_TEXT,
   'masaking: launch Masaking CLI',
@@ -194,6 +216,38 @@ function createTerminalEntries(lines, kind = 'system') {
   return lines.map((text) => ({ kind, text }));
 }
 
+function createCliOutputEntries(pathname) {
+  if (pathname === '/') {
+    return [{ kind: 'cli-home', text: 'cli-home' }];
+  }
+
+  if (pathname === '/works') {
+    return createTerminalEntries([
+      '[works]',
+      ...works.map((work, index) => `${String(index + 1).padStart(2, '0')}. ${work.title} | ${work.category}`),
+    ]);
+  }
+
+  if (pathname === '/about') {
+    return createTerminalEntries([
+      '[about]',
+      ...aboutContent.leadLines,
+      ...aboutContent.paragraphs.flatMap((paragraph) => splitTextLines(paragraph, 56)),
+    ]);
+  }
+
+  if (pathname === '/contact') {
+    return createTerminalEntries([
+      '[contact]',
+      ...splitTextLines(contactContent.intro, 56),
+      `mail: ${contactContent.email}`,
+      ...contactContent.links.map((link) => `${link.label}: ${link.href}`),
+    ]);
+  }
+
+  return [];
+}
+
 function getCliPathFromCommand(command) {
   if (command === '/top') {
     return '/';
@@ -210,36 +264,70 @@ function getCliPathFromCommand(command) {
   return null;
 }
 
-function getCliOutputLines(pathname) {
-  if (pathname === '/works') {
-    return [
-      '[works]',
-      ...works.map((work, index) => `${String(index + 1).padStart(2, '0')}. ${work.title} | ${work.category}`),
-    ];
-  }
+function TerminalAsciiBlock({ lines, className = '' }) {
+  const content = lines.length > 0 ? lines.join('\n') : '';
 
-  if (pathname === '/about') {
-    return [
-      '[about]',
-      ...aboutContent.leadLines,
-      ...aboutContent.paragraphs.flatMap((paragraph) => splitTextLines(paragraph, 56)),
-    ];
-  }
+  return <pre className={`m-0 whitespace-pre font-mono ${className}`}>{content}</pre>;
+}
 
-  if (pathname === '/contact') {
-    return [
-      '[contact]',
-      ...splitTextLines(contactContent.intro, 56),
-      `mail: ${contactContent.email}`,
-      ...contactContent.links.map((link) => `${link.label}: ${link.href}`),
-    ];
-  }
+function CliHomeScreen() {
+  const logoLines = MASAKING_LOGO_LINES.length > 0 ? MASAKING_LOGO_LINES : ['MASAKING'];
+  const portraitLines = PROFILE_ASCII_LINES.length > 0 ? PROFILE_ASCII_LINES : ['[ profile art ]'];
 
-  return [
-    '[top]',
-    'Welcome to masaking portfolio.',
-    CLI_COMMANDS_TEXT,
-  ];
+  return (
+    <div className="space-y-6 py-2">
+      <div className="overflow-x-auto px-1 pb-1 custom-scrollbar">
+        <TerminalAsciiBlock
+          lines={logoLines}
+          className="w-max min-w-full text-[4.5px] leading-[1] text-[#f0b186] sm:text-[5px] md:text-[6px]"
+        />
+      </div>
+
+      <div className="grid gap-8 px-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(280px,0.95fr)]">
+        <section className="min-w-0">
+          <h2 className="text-[16px] font-semibold text-[#f4f4f4]">Welcome, visitor.</h2>
+          <div className="mt-4 max-h-[420px] overflow-auto custom-scrollbar">
+              <TerminalAsciiBlock
+                lines={portraitLines}
+                className="w-max min-w-full text-[2.8px] leading-[0.82] text-[#f0b186] sm:text-[3.2px] md:text-[3.8px]"
+              />
+          </div>
+          <div className="mt-3 text-[12px] text-white/68">Masaking • Web creator • Kochi, Japan</div>
+          <div className="text-[12px] text-white/42">Scroll inside the portrait frame if needed.</div>
+        </section>
+
+        <div className="min-w-0 space-y-4">
+          <section>
+            <h2 className="text-[14px] font-semibold text-[#f0b186]">Overview</h2>
+            <p className="mt-2 text-[12px] leading-6 text-white/72">
+              Masaking portfolio running in terminal mode. Use slash commands to move between sections without leaving the shell.
+            </p>
+            <div className="mt-4 space-y-2">
+              {CLI_HOME_OVERVIEW_ROWS.map(([label, value]) => (
+                <div key={label} className="flex gap-4 text-[12px] leading-6">
+                  <span className="min-w-[64px] text-white/36">{label}</span>
+                  <span className="text-white/82">{value}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="pt-2">
+            <h2 className="text-[14px] font-semibold text-[#f0b186]">Navigation</h2>
+            <div className="mt-3 space-y-2">
+              {CLI_HOME_COMMAND_ROWS.map(([command, description]) => (
+                <div key={command} className="flex gap-4 text-[12px] leading-6">
+                  <span className="min-w-[64px] text-[#f4f4f4]">{command}</span>
+                  <span className="text-white/56">{description}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 text-[12px] italic text-white/34">Type `help` for launcher commands and `clear` to reset the terminal.</div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function buildWorksOverviewDiffEntries() {
@@ -638,6 +726,10 @@ function TerminalPromptInput({ value, onChange, onSubmit }) {
 }
 
 function TerminalLogLine({ entry }) {
+  if (entry.kind === 'cli-home') {
+    return <CliHomeScreen />;
+  }
+
   if (entry.kind === 'command') {
     return <TerminalCommandLine command={entry.text} />;
   }
@@ -1760,11 +1852,12 @@ function App() {
     { kind: 'system', text: AVAILABLE_COMMANDS_TEXT },
   ]);
 
+  function appendTerminalEntries(entries) {
+    setTerminalLog((currentLog) => [...currentLog, ...entries]);
+  }
+
   function appendTerminalLines(lines, kind = 'system') {
-    setTerminalLog((currentLog) => [
-      ...currentLog,
-      ...createTerminalEntries(lines, kind),
-    ]);
+    appendTerminalEntries(createTerminalEntries(lines, kind));
   }
 
   function handleTerminalSubmit(event) {
@@ -1783,7 +1876,8 @@ function App() {
       setHasEnteredWorkspace(true);
       setDisplayMode('cli');
       navigate('/');
-      appendTerminalLines([CLI_BOOT_MESSAGE, CLI_COMMANDS_TEXT, ...getCliOutputLines('/')]);
+      appendTerminalLines([CLI_BOOT_MESSAGE]);
+      appendTerminalEntries(createCliOutputEntries('/'));
       return;
     }
 
@@ -1813,7 +1907,7 @@ function App() {
       }
 
       navigate(cliPath);
-      appendTerminalLines(getCliOutputLines(cliPath));
+      appendTerminalEntries(createCliOutputEntries(cliPath));
       return;
     }
 

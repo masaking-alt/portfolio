@@ -51,6 +51,15 @@ const contactContent = {
 };
 
 const AVAILABLE_COMMANDS_TEXT = 'available commands: "masaking" , "masaking app" , "help" , "clear"';
+const TERMINAL_PROMPT = 'Visitor@MasakingPortfolio >';
+const HELP_COMMAND_LINES = [
+  AVAILABLE_COMMANDS_TEXT,
+  'masaking: Masaking CLIを起動',
+  'masaking app: Masaking Appを起動',
+  'help: コマンド一覧を表示',
+  'clear: ターミナルをクリア',
+];
+const CLI_BOOT_MESSAGE = 'Masaking CLI started.';
 
 function buildTopDiffEntries() {
   return [
@@ -252,13 +261,6 @@ function clampColumnWidths(widths, containerWidth) {
   const maxRight = Math.max(minRight, containerWidth - left - minCenter);
   const right = Math.min(Math.max(widths.right, minRight), maxRight);
   return { left, right };
-}
-
-function getRouteLabel(threadType, selectedWork) {
-  if (selectedWork) {
-    return `works/${selectedWork.id}`;
-  }
-  return threadType;
 }
 
 function getModeLabel(displayMode) {
@@ -501,28 +503,12 @@ function TerminalWindowShell({
 }
 
 function DesktopBackdrop() {
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[#050816]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_14%,rgba(84,118,255,0.28),transparent_24%),radial-gradient(circle_at_82%_18%,rgba(51,207,198,0.18),transparent_18%),radial-gradient(circle_at_50%_100%,rgba(255,120,84,0.18),transparent_28%)]" />
-      <div
-        className="absolute inset-0 opacity-40"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
-          backgroundSize: '140px 140px',
-        }}
-      />
-      <div className="absolute -left-12 top-24 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
-      <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-indigo-500/14 blur-3xl" />
-      <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-rose-500/10 blur-3xl" />
-    </div>
-  );
+  return <div className="pointer-events-none absolute inset-0 bg-black" />;
 }
 
 function DesktopMenuBar({ displayMode }) {
   return (
-    <div className="relative z-40 flex h-9 items-center justify-between border-b border-white/[0.08] bg-[#070a10]/70 px-4 text-[12px] text-white/72 backdrop-blur-xl">
+    <div className="relative z-40 flex h-9 items-center justify-between border-b border-white/[0.08] bg-black px-4 text-[12px] text-white/72">
       <div className="flex min-w-0 items-center gap-4">
         <img src="/favicon.png" alt="" className="h-4 w-4 rounded-[4px]" />
         <span className="font-semibold text-white/88">masaking.desktop</span>
@@ -542,25 +528,29 @@ function DesktopMenuBar({ displayMode }) {
   );
 }
 
+function TerminalPrompt() {
+  return <span className="shrink-0 text-[#32d74b]">{TERMINAL_PROMPT}</span>;
+}
+
 function TerminalCommandLine({ command }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] leading-6">
-      <span className="text-[#30d158]">❯</span>
-      <span className="text-[#f5f5f5]">{command}</span>
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] leading-6">
+      <TerminalPrompt />
+      <span className="whitespace-pre-wrap break-all text-[#f5f5f5]">{command}</span>
     </div>
   );
 }
 
-function TerminalPromptInput({ value, onChange, onSubmit, placeholder = '' }) {
+function TerminalPromptInput({ value, onChange, onSubmit }) {
   return (
-    <form onSubmit={onSubmit} className="mt-3 flex items-center gap-2 text-[12px] leading-6">
-      <span className="text-[#30d158]">❯</span>
+    <form onSubmit={onSubmit} className="flex items-center gap-2 text-[12px] leading-6">
+      <TerminalPrompt />
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[#f5f5f5] outline-none placeholder:text-[#6c6c6c]"
-        placeholder={placeholder}
         autoComplete="off"
+        autoFocus
         spellCheck="false"
       />
     </form>
@@ -579,131 +569,7 @@ function TerminalLogLine({ entry }) {
   return <div className="text-[#d0d0d0]">{entry.text}</div>;
 }
 
-function CliTerminalBody({ threadType, selectedWork, threadState, terminalLog }) {
-  const routeLabel = getRouteLabel(threadType, selectedWork);
-  const aggregateTechnologies = Array.from(new Set(works.flatMap((work) => work.technologies))).slice(0, 12);
-  const technologies = selectedWork
-    ? selectedWork.technologies
-    : threadType === 'about'
-      ? aboutContent.technologies
-      : aggregateTechnologies;
-  const runtimeMessages = terminalLog.filter((entry, index) => index > 0 && entry.kind !== 'command');
-
-  return (
-    <div className="flex min-h-0 flex-1 flex-col bg-[#1e1e1e]">
-      <div className="min-h-0 flex-1 overflow-auto px-5 py-4 font-mono text-[12px] leading-6 text-[#d0d0d0] custom-scrollbar">
-        <TerminalCommandLine command="masaking" />
-        <div>Masaking CLI attached to {routeLabel}</div>
-
-        <TerminalCommandLine command="ls sections" />
-        <div className="mt-1 flex flex-wrap gap-x-5 text-[#d0d0d0]">
-          <Link to="/" className="transition hover:text-white">top</Link>
-          <Link to="/works" className="transition hover:text-white">works</Link>
-          <Link to="/about" className="transition hover:text-white">about</Link>
-          <Link to="/contact" className="transition hover:text-white">contact</Link>
-        </div>
-
-        <TerminalCommandLine command={selectedWork ? `open works/${selectedWork.id}` : `open ${threadType}`} />
-        <div className="mt-1 text-[#f5f5f5]">{threadState.answerTitle}</div>
-        <div className="mt-2 space-y-2 text-[#d0d0d0]">
-          {threadState.paragraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
-        </div>
-
-        {!selectedWork && threadType === 'works' ? (
-          <div className="mt-4 space-y-1 text-[#d0d0d0]">
-            {works.map((work) => (
-              <Link
-                key={work.id}
-                to={`/work/${work.id}`}
-                className="flex items-center justify-between gap-4 transition hover:text-white"
-              >
-                <span className="truncate text-[#f5f5f5]">{work.title}</span>
-                <span className="shrink-0 text-[#9b9b9b]">{work.category}</span>
-              </Link>
-            ))}
-          </div>
-        ) : null}
-
-        {selectedWork ? (
-          <div className="mt-4 space-y-1 text-[#d0d0d0]">
-            <div>title: <span className="text-[#f5f5f5]">{selectedWork.title}</span></div>
-            <div>category: {selectedWork.category}</div>
-            <div>
-              url:{' '}
-              <a href={selectedWork.externalUrl} target="_blank" rel="noopener noreferrer" className="text-[#9cdcfe] transition hover:text-white">
-                {selectedWork.externalUrl}
-              </a>
-            </div>
-            <div>stack: {selectedWork.technologies.join(', ')}</div>
-          </div>
-        ) : null}
-
-        {!selectedWork && threadType === 'about' ? (
-          <div className="mt-4 text-[#d0d0d0]">
-            stack: {aboutContent.technologies.join(', ')}
-          </div>
-        ) : null}
-
-        {!selectedWork && threadType === 'contact' ? (
-          <div className="mt-4 space-y-1 text-[#d0d0d0]">
-            <a href={`mailto:${contactContent.email}`} className="block text-[#9cdcfe] transition hover:text-white">
-              {contactContent.email}
-            </a>
-            {contactContent.links.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-[#9cdcfe] transition hover:text-white"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-        ) : null}
-
-        {!selectedWork && threadType === 'top' ? (
-          <div className="mt-4 text-[#d0d0d0]">
-            technologies: {aggregateTechnologies.join(', ')}
-          </div>
-        ) : null}
-
-        {!selectedWork && threadType !== 'contact' && threadType !== 'about' && threadType !== 'top' ? (
-          <div className="mt-4 text-[#d0d0d0]">
-            stack: {technologies.join(', ')}
-          </div>
-        ) : null}
-
-        <TerminalCommandLine command="git diff --staged --stat" />
-        <div className="mt-1 space-y-1 text-[#d0d0d0]">
-          {threadState.diffEntries.map((entry) => (
-            <div key={entry.fileName} className="flex items-center justify-between gap-4">
-              <span className="truncate text-[#f5f5f5]">{entry.fileName}</span>
-              <span className="shrink-0 text-[#30d158]">+{entry.addedLines.length}</span>
-            </div>
-          ))}
-        </div>
-
-        {runtimeMessages.length ? (
-          <div className="mt-4 space-y-0">
-            {runtimeMessages.map((entry, index) => (
-              <TerminalLogLine key={`${entry.text}-${index}`} entry={entry} />
-            ))}
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
 function LauncherTerminalWindow({
-  threadType,
-  selectedWork,
-  threadState,
-  displayMode,
   terminalCommand,
   terminalLog,
   onTerminalCommandChange,
@@ -714,35 +580,28 @@ function LauncherTerminalWindow({
   const launcherScrollRef = useRef(null);
 
   useEffect(() => {
-    if (displayMode !== 'cli' && launcherScrollRef.current) {
+    if (launcherScrollRef.current) {
       launcherScrollRef.current.scrollTop = launcherScrollRef.current.scrollHeight;
     }
-  }, [displayMode, terminalLog]);
+  }, [terminalLog]);
 
   return (
     <TerminalWindowShell title={terminalTitle} active className="flex h-full min-h-0 flex-col" {...shellProps}>
-      {displayMode === 'cli' ? (
-        <div className="flex h-full min-h-0 flex-col">
-          <CliTerminalBody threadType={threadType} selectedWork={selectedWork} threadState={threadState} terminalLog={terminalLog} />
-          <div className="bg-[#1e1e1e] px-5 pb-4 font-mono">
-            <TerminalPromptInput value={terminalCommand} onChange={onTerminalCommandChange} onSubmit={onTerminalSubmit} />
+      <div className="flex h-full min-h-0 flex-col bg-[#1e1e1e] px-5 py-4 font-mono text-[12px] leading-6 text-[#d0d0d0]">
+        <div ref={launcherScrollRef} className="min-h-0 flex-1 overflow-auto custom-scrollbar">
+          <div className="space-y-0">
+            {terminalLog.map((entry, index) => (
+              <div key={`${entry.text}-${index}`}>
+                <TerminalLogLine entry={entry} />
+              </div>
+            ))}
           </div>
         </div>
-      ) : (
-        <div className="flex h-full min-h-0 flex-col bg-[#1e1e1e] px-5 py-4 font-mono text-[12px] leading-6 text-[#d0d0d0]">
-          <div ref={launcherScrollRef} className="min-h-0 flex-1 overflow-auto custom-scrollbar">
-            <div className="space-y-0">
-              {terminalLog.map((entry, index) => (
-                <div key={`${entry.text}-${index}`}>
-                  <TerminalLogLine entry={entry} />
-                </div>
-              ))}
-            </div>
-          </div>
 
+        <div className="pt-0">
           <TerminalPromptInput value={terminalCommand} onChange={onTerminalCommandChange} onSubmit={onTerminalSubmit} />
         </div>
-      )}
+      </div>
     </TerminalWindowShell>
   );
 }
@@ -1664,7 +1523,7 @@ function WorkspaceScreen({
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-[#050816] text-white antialiased">
+    <div className="relative h-screen w-screen overflow-hidden bg-black text-white antialiased">
       <DesktopBackdrop />
 
       <div className="relative flex h-full flex-col overflow-hidden">
@@ -1768,16 +1627,18 @@ function App() {
 
   function handleTerminalSubmit(event) {
     event.preventDefault();
+    const rawCommand = terminalCommand.trim();
     const normalizedCommand = terminalCommand.trim().toLowerCase().replace(/\s+/g, ' ');
+    setTerminalLog((currentLog) => [...currentLog, { kind: 'command', text: rawCommand }]);
+    setTerminalCommand('');
+
     if (!normalizedCommand) {
       return;
     }
 
-    setTerminalLog((currentLog) => [...currentLog, { kind: 'command', text: terminalCommand.trim() }]);
-    setTerminalCommand('');
-
     if (normalizedCommand === 'masaking') {
       setDisplayMode('cli');
+      setTerminalLog((currentLog) => [...currentLog, { kind: 'system', text: CLI_BOOT_MESSAGE }]);
       return;
     }
 
@@ -1787,18 +1648,19 @@ function App() {
     }
 
     if (normalizedCommand === 'help') {
-      setTerminalLog((currentLog) => [...currentLog, { kind: 'system', text: AVAILABLE_COMMANDS_TEXT }]);
+      setTerminalLog((currentLog) => [
+        ...currentLog,
+        ...HELP_COMMAND_LINES.map((line) => ({ kind: 'system', text: line })),
+      ]);
       return;
     }
 
     if (normalizedCommand === 'clear') {
-      setDisplayMode('idle');
-      setTerminalLog([{ kind: 'system', text: AVAILABLE_COMMANDS_TEXT }]);
+      setTerminalLog([]);
       return;
     }
 
-    const notFoundMessage = `"${terminalCommand.trim()}": command not found`;
-    setTerminalLog((currentLog) => [...currentLog, { kind: 'error', text: notFoundMessage }]);
+    setTerminalLog((currentLog) => [...currentLog, { kind: 'error', text: `command not found: ${rawCommand}` }]);
   }
 
   return (

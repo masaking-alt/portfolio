@@ -303,6 +303,21 @@ function createCliOutputEntries(pathname) {
   return [];
 }
 
+function createWorkDetailEntries(work) {
+  return createTerminalEntries([
+    `[work] ${work.title}`,
+    `id: ${work.id}`,
+    `category: ${work.category}`,
+    '',
+    ...splitTextLines(work.description, 72),
+    '',
+    'technologies:',
+    ...work.technologies.map((technology) => `- ${technology}`),
+    '',
+    `url: ${work.externalUrl}`,
+  ]);
+}
+
 function getWorkFromCliTarget(target) {
   const normalizedTarget = target.trim().toLowerCase();
   if (!normalizedTarget) {
@@ -2005,7 +2020,7 @@ function App() {
       }
 
       navigate(`/work/${work.id}`);
-      appendTerminalLines([`opening work: ${work.title}`]);
+      appendTerminalEntries(createWorkDetailEntries(work));
       return;
     }
 

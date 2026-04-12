@@ -198,6 +198,7 @@ const CLI_HOME_OVERVIEW_ROWS = [
 const CLI_HOME_COMMAND_ROWS = [
   ['/top', 'Reload this home screen'],
   ['/works', 'List selected projects'],
+  ['/open 1', 'Open project detail'],
   ['/about', 'Show profile summary'],
   ['/contact', 'Show contact details'],
 ];
@@ -276,7 +277,9 @@ function createCliOutputEntries(pathname) {
   if (pathname === '/works') {
     return createTerminalEntries([
       '[works]',
-      ...works.map((work, index) => `${String(index + 1).padStart(2, '0')}. ${work.title} | ${work.category}`),
+      ...works.map((work, index) => `${String(index + 1).padStart(2, '0')}. ${work.title} | ${work.category} | ${work.id}`),
+      '',
+      'Open detail: /open 1 or /open marple',
     ]);
   }
 
@@ -298,6 +301,31 @@ function createCliOutputEntries(pathname) {
   }
 
   return [];
+}
+
+function getWorkFromCliTarget(target) {
+  const normalizedTarget = target.trim().toLowerCase();
+  if (!normalizedTarget) {
+    return null;
+  }
+
+  if (/^\d+$/.test(normalizedTarget)) {
+    return works[Number(normalizedTarget) - 1] ?? null;
+  }
+
+  return works.find((work) => work.id.toLowerCase() === normalizedTarget) ?? null;
+}
+
+function getOpenTargetFromCommand(command) {
+  if (command.startsWith('/open/')) {
+    return command.slice('/open/'.length);
+  }
+
+  if (command.startsWith('/open ')) {
+    return command.slice('/open '.length);
+  }
+
+  return null;
 }
 
 function getCliPathFromCommand(command) {
@@ -1960,6 +1988,24 @@ function App() {
 
       navigate(cliPath);
       appendTerminalEntries(createCliOutputEntries(cliPath));
+      return;
+    }
+
+    const openTarget = getOpenTargetFromCommand(normalizedCommand);
+    if (openTarget !== null) {
+      if (!hasEnteredWorkspace) {
+        appendTerminalLines(['Run "masaking" or "masaking app" first.'], 'error');
+        return;
+      }
+
+      const work = getWorkFromCliTarget(openTarget);
+      if (!work) {
+        appendTerminalLines([`work not found: ${openTarget}`], 'error');
+        return;
+      }
+
+      navigate(`/work/${work.id}`);
+      appendTerminalLines([`opening work: ${work.title}`]);
       return;
     }
 

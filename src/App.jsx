@@ -1067,9 +1067,14 @@ function LeftSidebar({
   );
 }
 
-function TopBar({ title, addedCount }) {
+function TopBar({ title, addedCount, onHeaderPointerDown }) {
   return (
-    <header className="order-1 flex h-10 items-center justify-between border-b border-white/[0.05] bg-[#181818] px-4 lg:order-none lg:col-[2/4] lg:row-start-1">
+    <header
+      onPointerDown={onHeaderPointerDown}
+      className={`order-1 flex h-10 items-center justify-between border-b border-white/[0.05] bg-[#181818] px-4 lg:order-none lg:col-[2/4] lg:row-start-1 ${
+        onHeaderPointerDown ? 'cursor-grab active:cursor-grabbing' : ''
+      }`}
+    >
       <div className="flex min-w-0 items-center gap-2 text-[12.5px] text-white/84">
         <span className="truncate font-medium">{title}</span>
         <MoreHorizontal className="h-3.5 w-3.5 shrink-0 text-white/34" />
@@ -1598,7 +1603,7 @@ function AppWindow({ threadType, selectedWork, threadState, shellProps = {} }) {
             onToggleMaximize={onToggleMaximize}
             isMaximized={isMaximized}
           />
-          <TopBar title={threadState.title} addedCount={addedCount} />
+          <TopBar title={threadState.title} addedCount={addedCount} onHeaderPointerDown={onHeaderPointerDown} />
           <CenterColumn
             threadType={threadType}
             selectedWork={selectedWork}

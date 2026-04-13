@@ -46,7 +46,6 @@ a {
 }
 
 .desktop-window-surface--maximized {
-  border-radius: 0 !important;
   box-shadow: none !important;
 }
 

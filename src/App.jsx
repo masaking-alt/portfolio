@@ -18,6 +18,7 @@ import {
   SquarePen,
 } from 'lucide-react';
 import { createElement, useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { works } from './works';
 
@@ -211,6 +212,8 @@ const HELP_COMMAND_LINES = [
 ];
 const CLI_BOOT_MESSAGE = 'Masaking CLI started.';
 const APP_BOOT_MESSAGE = 'Masaking App started.';
+const WINDOW_FLIP_DURATION_MS = 420;
+const WINDOW_FLIP_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 function padTwoDigits(value) {
   return String(value).padStart(2, '0');
@@ -708,6 +711,7 @@ function WindowControlButtons({ onToggleMaximize, isMaximized = false, className
 
 function WindowShell({
   active = false,
+  isMaximized = false,
   className = '',
   bodyClassName = '',
   onWindowPointerDown,
@@ -716,7 +720,7 @@ function WindowShell({
   return (
     <section
       onPointerDown={onWindowPointerDown}
-      className={`relative overflow-hidden rounded-[28px] border bg-[#0d1017]/90 backdrop-blur-xl ${
+      className={`desktop-window-surface ${isMaximized ? 'desktop-window-surface--maximized' : ''} relative overflow-hidden rounded-[28px] border bg-[#0d1017]/90 backdrop-blur-xl ${
         active
           ? 'border-white/16 shadow-[0_28px_90px_rgba(0,0,0,0.48)]'
           : 'border-white/10 shadow-[0_18px_56px_rgba(0,0,0,0.34)]'
@@ -741,7 +745,7 @@ function TerminalWindowShell({
   return (
     <section
       onPointerDown={onWindowPointerDown}
-      className={`relative overflow-hidden rounded-[18px] border border-white/[0.12] bg-[#1c1c1c] shadow-[0_22px_60px_rgba(0,0,0,0.45)] ${
+      className={`desktop-window-surface ${isMaximized ? 'desktop-window-surface--maximized' : ''} relative overflow-hidden rounded-[18px] border border-white/[0.12] bg-[#1c1c1c] shadow-[0_22px_60px_rgba(0,0,0,0.45)] ${
         active ? 'ring-1 ring-white/8' : ''
       } ${className}`}
     >
@@ -1655,13 +1659,101 @@ function WorkspaceScreen({
   );
   const [activeWindow, setActiveWindow] = useState(displayMode === 'app' ? 'app' : 'terminal');
   const [dragState, setDragState] = useState(null);
+  const windowFrameRefs = useRef({ terminal: null, app: null });
+  const windowAnimationRefs = useRef({ terminal: null, app: null });
   const previousDisplayModeRef = useRef(displayMode);
+
+  function cancelWindowFrameAnimation(windowKey, shouldClearStyles = false) {
+    const currentAnimation = windowAnimationRefs.current[windowKey];
+    if (currentAnimation?.rafId) {
+      cancelAnimationFrame(currentAnimation.rafId);
+    }
+    if (currentAnimation?.timeoutId) {
+      window.clearTimeout(currentAnimation.timeoutId);
+    }
+    windowAnimationRefs.current[windowKey] = null;
+
+    if (!shouldClearStyles) {
+      return;
+    }
+
+    const frameElement = windowFrameRefs.current[windowKey];
+    if (!frameElement) {
+      return;
+    }
+    frameElement.style.transition = '';
+    frameElement.style.transform = '';
+    frameElement.style.transformOrigin = '';
+    frameElement.style.pointerEvents = '';
+  }
+
+  function playWindowFrameFlip(windowKey, firstRect, nextFrame) {
+    const frameElement = windowFrameRefs.current[windowKey];
+    const desktopViewport = desktopViewportRef.current;
+    if (!frameElement || !desktopViewport || !firstRect || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      cancelWindowFrameAnimation(windowKey, true);
+      return;
+    }
+
+    const viewportRect = desktopViewport.getBoundingClientRect();
+    const lastRect = {
+      left: viewportRect.left + nextFrame.x,
+      top: viewportRect.top + nextFrame.y,
+      width: nextFrame.width,
+      height: nextFrame.height,
+    };
+
+    if (lastRect.width <= 0 || lastRect.height <= 0) {
+      cancelWindowFrameAnimation(windowKey, true);
+      return;
+    }
+
+    const deltaX = firstRect.left - lastRect.left;
+    const deltaY = firstRect.top - lastRect.top;
+    const scaleX = firstRect.width / lastRect.width;
+    const scaleY = firstRect.height / lastRect.height;
+    const animationId = Symbol(windowKey);
+    const animationState = { id: animationId, rafId: null, timeoutId: null };
+    windowAnimationRefs.current[windowKey] = animationState;
+
+    frameElement.style.transition = 'none';
+    frameElement.style.transformOrigin = 'top left';
+    frameElement.style.pointerEvents = 'none';
+    frameElement.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scaleX}, ${scaleY})`;
+    frameElement.getBoundingClientRect();
+
+    animationState.rafId = requestAnimationFrame(() => {
+      if (windowAnimationRefs.current[windowKey]?.id !== animationId) {
+        return;
+      }
+
+      frameElement.style.transition = `transform ${WINDOW_FLIP_DURATION_MS}ms ${WINDOW_FLIP_EASING}`;
+      frameElement.style.transform = 'translate3d(0, 0, 0) scale(1, 1)';
+    });
+
+    animationState.timeoutId = window.setTimeout(() => {
+      if (windowAnimationRefs.current[windowKey]?.id !== animationId) {
+        return;
+      }
+
+      frameElement.style.transition = '';
+      frameElement.style.transform = '';
+      frameElement.style.transformOrigin = '';
+      frameElement.style.pointerEvents = '';
+      windowAnimationRefs.current[windowKey] = null;
+    }, WINDOW_FLIP_DURATION_MS + 80);
+  }
 
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => () => {
+    cancelWindowFrameAnimation('terminal', true);
+    cancelWindowFrameAnimation('app', true);
   }, []);
 
   useEffect(() => {
@@ -1782,33 +1874,28 @@ function WorkspaceScreen({
       return;
     }
 
-    setActiveWindow(windowKey);
-    setWindowFrames((currentFrames) => {
-      const frame = currentFrames[windowKey];
-      if (!frame) {
-        return currentFrames;
-      }
+    const frame = windowFrames[windowKey];
+    if (!frame) {
+      return;
+    }
 
-      if (frame.isMaximized && frame.restoreFrame) {
-        return {
-          ...currentFrames,
-          [windowKey]: {
-            ...clampWindowFrame(
-              {
-                ...frame.restoreFrame,
-                isMaximized: false,
-              },
-              desktopArea.width,
-              desktopArea.height,
-            ),
-            restoreFrame: null,
-          },
-        };
-      }
+    const frameElement = windowFrameRefs.current[windowKey];
+    const firstRect = frameElement?.getBoundingClientRect();
+    cancelWindowFrameAnimation(windowKey);
 
-      return {
-        ...currentFrames,
-        [windowKey]: {
+    const nextFrame = frame.isMaximized && frame.restoreFrame
+      ? {
+          ...clampWindowFrame(
+            {
+              ...frame.restoreFrame,
+              isMaximized: false,
+            },
+            desktopArea.width,
+            desktopArea.height,
+          ),
+          restoreFrame: null,
+        }
+      : {
           ...getMaximizedFrame(desktopArea.width, desktopArea.height),
           restoreFrame: {
             x: frame.x,
@@ -1816,9 +1903,17 @@ function WorkspaceScreen({
             width: frame.width,
             height: frame.height,
           },
-        },
-      };
+        };
+
+    flushSync(() => {
+      setActiveWindow(windowKey);
+      setWindowFrames((currentFrames) => ({
+        ...currentFrames,
+        [windowKey]: nextFrame,
+      }));
     });
+
+    playWindowFrameFlip(windowKey, firstRect, nextFrame);
   }
 
   const terminalShellProps = {
@@ -1836,7 +1931,6 @@ function WorkspaceScreen({
     onHeaderPointerDown: (event) => startWindowDrag('app', event),
     onToggleMaximize: () => toggleWindowMaximize('app'),
   };
-  const hasMaximizedWindow = Boolean(windowFrames.terminal?.isMaximized || windowFrames.app?.isMaximized);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-black text-white antialiased">
@@ -1845,11 +1939,7 @@ function WorkspaceScreen({
       <div className="relative flex h-full flex-col overflow-hidden">
         <DesktopMenuBar displayMode={displayMode} />
 
-        <div
-          className={`relative flex-1 overflow-hidden ${
-            hasMaximizedWindow ? 'px-0 pt-0' : 'px-3 pt-3 sm:px-5 sm:pt-5 lg:px-6 lg:pt-6'
-          }`}
-        >
+        <div className="relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 lg:p-0">
           <div className="flex h-full flex-col gap-4 lg:hidden">
             {displayMode === 'cli' ? (
               <div className="min-h-0 flex-1">
@@ -1890,6 +1980,9 @@ function WorkspaceScreen({
 
           <div ref={desktopViewportRef} className="relative hidden h-full lg:block">
             <div
+              ref={(node) => {
+                windowFrameRefs.current.terminal = node;
+              }}
               style={{
                 left: `${windowFrames.terminal.x}px`,
                 top: `${windowFrames.terminal.y}px`,
@@ -1897,7 +1990,7 @@ function WorkspaceScreen({
                 height: `${windowFrames.terminal.height}px`,
                 zIndex: activeWindow === 'terminal' ? 30 : 20,
               }}
-              className="absolute"
+              className={`desktop-window-frame absolute ${dragState?.key === 'terminal' ? 'desktop-window-frame--dragging' : ''}`}
             >
                 <LauncherTerminalWindow
                   threadType={effectiveThreadType}
@@ -1914,6 +2007,9 @@ function WorkspaceScreen({
 
             {displayMode === 'app' ? (
               <div
+                ref={(node) => {
+                  windowFrameRefs.current.app = node;
+                }}
                 style={{
                   left: `${windowFrames.app.x}px`,
                   top: `${windowFrames.app.y}px`,
@@ -1921,7 +2017,7 @@ function WorkspaceScreen({
                   height: `${windowFrames.app.height}px`,
                   zIndex: activeWindow === 'app' ? 30 : 20,
                 }}
-                className="absolute"
+                className={`desktop-window-frame absolute ${dragState?.key === 'app' ? 'desktop-window-frame--dragging' : ''}`}
               >
                 <AppWindow
                   threadType={effectiveThreadType}

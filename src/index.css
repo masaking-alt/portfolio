@@ -3,7 +3,7 @@
 :root {
   color-scheme: dark;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Hiragino Sans", "Noto Sans JP", sans-serif;
-  background: #0e0e0e;
+  background: #F7F3DE;
 }
 
 html,
@@ -16,7 +16,7 @@ body,
 
 body {
   margin: 0;
-  background: #0e0e0e;
+  background: #F7F3DE;
 }
 
 a {

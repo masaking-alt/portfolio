@@ -17,11 +17,16 @@ import {
   Settings,
   SquarePen,
 } from 'lucide-react';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { createElement, useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { works } from './works';
+import { DesktopBackdrop } from './components/desktop/DesktopBackdrop';
+import { DesktopMenuBar } from './components/desktop/DesktopMenuBar';
+import { TerminalWindowShell } from './components/desktop/TerminalWindowShell';
+import { WindowControlButtons } from './components/desktop/WindowControlButtons';
+import { WindowShell } from './components/desktop/WindowShell';
+import { OnloadAnimation } from './components/onload/OnloadAnimation';
 import { aboutContent, contactContent } from './constants/content';
 import { MASAKING_LOGO_LINES, PROFILE_ASCII_LINES } from './constants/asciiArt';
 import {
@@ -35,8 +40,6 @@ import {
   TERMINAL_PROMPT,
 } from './constants/terminal';
 import { PAGE_BACKGROUND_COLOR, WINDOW_FLIP_DURATION_MS, WINDOW_FLIP_EASING } from './constants/window';
-import { getModeLabel } from './utils/displayMode';
-import { formatCurrentTimestamp } from './utils/date';
 import { getCliPathFromCommand, getOpenTargetFromCommand, getWorkFromCliTarget } from './utils/commands';
 import {
   createCliOutputEntries,
@@ -121,199 +124,6 @@ function CliHomeScreen() {
             <div className="mt-4 text-[12px] italic text-white/34">Type `help` for launcher commands and `clear` to reset the terminal.</div>
           </section>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function WindowControlButtons({ onToggleMaximize, isMaximized = false, className = '' }) {
-  return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <button
-        type="button"
-        aria-label="close window"
-        onPointerDown={(event) => event.stopPropagation()}
-        onClick={(event) => event.stopPropagation()}
-        className="h-3 w-3 rounded-full bg-[#ff5f57]"
-      />
-      <button
-        type="button"
-        aria-label="minimize window"
-        onPointerDown={(event) => event.stopPropagation()}
-        onClick={(event) => event.stopPropagation()}
-        className="h-3 w-3 rounded-full bg-[#febc2e]"
-      />
-      <button
-        type="button"
-        aria-label={isMaximized ? 'restore window' : 'maximize window'}
-        onPointerDown={(event) => event.stopPropagation()}
-        onClick={(event) => {
-          event.stopPropagation();
-          onToggleMaximize?.();
-        }}
-        className="flex h-3 w-3 items-center justify-center rounded-full bg-[#28c840]"
-      >
-        <span className="h-[5px] w-[5px] rounded-[1px] bg-black/25" />
-      </button>
-    </div>
-  );
-}
-
-function WindowShell({
-  active = false,
-  isMaximized = false,
-  className = '',
-  bodyClassName = '',
-  onWindowPointerDown,
-  children,
-}) {
-  return (
-    <section
-      onPointerDown={onWindowPointerDown}
-      className={`desktop-window-surface ${isMaximized ? 'desktop-window-surface--maximized' : ''} relative overflow-hidden rounded-[28px] border bg-[#0d1017]/90 backdrop-blur-xl ${
-        active
-          ? 'border-white/16 shadow-[0_28px_90px_rgba(0,0,0,0.48)]'
-          : 'border-white/10 shadow-[0_18px_56px_rgba(0,0,0,0.34)]'
-      } ${className}`}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_42%)]" />
-      <div className={`relative flex min-h-0 flex-col ${bodyClassName}`}>{children}</div>
-    </section>
-  );
-}
-
-function TerminalWindowShell({
-  title,
-  onWindowPointerDown,
-  onHeaderPointerDown,
-  onToggleMaximize,
-  isMaximized = false,
-  active = false,
-  className = '',
-  children,
-}) {
-  return (
-    <section
-      onPointerDown={onWindowPointerDown}
-      className={`desktop-window-surface ${isMaximized ? 'desktop-window-surface--maximized' : ''} relative overflow-hidden rounded-[18px] border border-white/[0.12] bg-[#1c1c1c] shadow-[0_22px_60px_rgba(0,0,0,0.45)] ${
-        active ? 'ring-1 ring-white/8' : ''
-      } ${className}`}
-    >
-      <div
-        onPointerDown={onHeaderPointerDown}
-        className={`flex h-8 items-center justify-between border-b border-white/[0.06] bg-[linear-gradient(180deg,#303030_0%,#262626_100%)] px-3 ${
-          onHeaderPointerDown ? 'cursor-grab active:cursor-grabbing' : ''
-        }`}
-      >
-        <WindowControlButtons onToggleMaximize={onToggleMaximize} isMaximized={isMaximized} />
-
-        <div className="min-w-0 flex-1 px-4 text-center text-[11px] font-medium text-white/72">
-          <span className="truncate">{title}</span>
-        </div>
-
-        <div className="w-[42px]" />
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col bg-[#1e1e1e]">{children}</div>
-    </section>
-  );
-}
-
-function OnloadAnimation({ onComplete }) {
-  const [hasWindowLoaded, setHasWindowLoaded] = useState(false);
-  const [isBackground, setIsBackground] = useState(false);
-  const dotLottieRef = useRef(null);
-  const completeHandlerRef = useRef(null);
-
-  const cleanupCompleteListener = useCallback(() => {
-    if (dotLottieRef.current && completeHandlerRef.current) {
-      dotLottieRef.current.removeEventListener('complete', completeHandlerRef.current);
-    }
-
-    completeHandlerRef.current = null;
-  }, []);
-
-  const handleDotLottieRef = useCallback((dotLottie) => {
-    cleanupCompleteListener();
-    dotLottieRef.current = dotLottie;
-
-    if (!dotLottie) {
-      return;
-    }
-
-    const handleComplete = () => {
-      if (typeof dotLottie.totalFrames === 'number' && dotLottie.totalFrames > 0) {
-        dotLottie.setFrame(dotLottie.totalFrames - 1);
-      }
-      dotLottie.pause();
-      setIsBackground(true);
-      onComplete?.();
-    };
-
-    dotLottie.addEventListener('complete', handleComplete);
-    completeHandlerRef.current = handleComplete;
-  }, [cleanupCompleteListener, onComplete]);
-
-  useEffect(() => {
-    if (document.readyState === 'complete') {
-      setHasWindowLoaded(true);
-      return undefined;
-    }
-
-    const handleWindowLoad = () => setHasWindowLoaded(true);
-    window.addEventListener('load', handleWindowLoad, { once: true });
-
-    return () => window.removeEventListener('load', handleWindowLoad);
-  }, []);
-
-  useEffect(() => cleanupCompleteListener, [cleanupCompleteListener]);
-
-  if (!hasWindowLoaded) {
-    return null;
-  }
-
-  return (
-    <div
-      aria-hidden="true"
-      className={`onload-lottie ${isBackground ? 'onload-lottie--background' : 'onload-lottie--intro'}`}
-    >
-      <DotLottieReact
-        autoplay
-        backgroundColor={PAGE_BACKGROUND_COLOR}
-        className="block h-full w-full"
-        dotLottieRefCallback={handleDotLottieRef}
-        layout={{ fit: 'cover', align: [0.5, 0.5] }}
-        loop={false}
-        src="/onload.lottie"
-        style={{ display: 'block', height: '100%', width: '100%' }}
-      />
-    </div>
-  );
-}
-
-function DesktopBackdrop() {
-  return (
-    <div
-      className="pointer-events-none absolute inset-0 overflow-hidden"
-      style={{ backgroundColor: PAGE_BACKGROUND_COLOR }}
-    />
-  );
-}
-
-function DesktopMenuBar({ displayMode }) {
-  return (
-    <div className="relative z-40 flex h-9 items-center justify-between px-4 text-[12px] text-black/68">
-      <div className="flex min-w-0 items-center gap-4">
-        <img src="/favicon.png" alt="" className="h-4 w-4 rounded-[4px]" />
-        <span className="font-semibold text-black/86">{getModeLabel(displayMode)}</span>
-        <span>Session</span>
-        <span>Portfolio</span>
-        <span>Window</span>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Search className="h-3.5 w-3.5" />
-        <span>{formatCurrentTimestamp()}</span>
       </div>
     </div>
   );

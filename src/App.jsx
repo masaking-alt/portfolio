@@ -771,7 +771,7 @@ function TerminalWindowShell({
   );
 }
 
-function OnloadAnimation() {
+function OnloadAnimation({ onComplete }) {
   const [hasWindowLoaded, setHasWindowLoaded] = useState(false);
   const [isBackground, setIsBackground] = useState(false);
   const dotLottieRef = useRef(null);
@@ -799,11 +799,12 @@ function OnloadAnimation() {
       }
       dotLottie.pause();
       setIsBackground(true);
+      onComplete?.();
     };
 
     dotLottie.addEventListener('complete', handleComplete);
     completeHandlerRef.current = handleComplete;
-  }, [cleanupCompleteListener]);
+  }, [cleanupCompleteListener, onComplete]);
 
   useEffect(() => {
     if (document.readyState === 'complete') {
@@ -1742,9 +1743,14 @@ function WorkspaceScreen({
   );
   const [activeWindow, setActiveWindow] = useState(displayMode === 'app' ? 'app' : 'terminal');
   const [dragState, setDragState] = useState(null);
+  const [hasIntroCompleted, setHasIntroCompleted] = useState(false);
   const windowFrameRefs = useRef({ terminal: null, app: null });
   const windowAnimationRefs = useRef({ terminal: null, app: null });
   const previousDisplayModeRef = useRef(displayMode);
+
+  const handleOnloadAnimationComplete = useCallback(() => {
+    setHasIntroCompleted(true);
+  }, []);
 
   function cancelWindowFrameAnimation(windowKey, shouldClearStyles = false) {
     const currentAnimation = windowAnimationRefs.current[windowKey];
@@ -2021,12 +2027,18 @@ function WorkspaceScreen({
       style={{ backgroundColor: PAGE_BACKGROUND_COLOR }}
     >
       <DesktopBackdrop />
-      <OnloadAnimation />
+      <OnloadAnimation onComplete={handleOnloadAnimationComplete} />
 
-      <div className="relative z-10 flex h-full flex-col overflow-hidden">
-        <DesktopMenuBar displayMode={displayMode} />
+      <div
+        className={`desktop-ui-reveal relative z-10 flex h-full flex-col overflow-hidden ${
+          hasIntroCompleted ? 'desktop-ui-reveal--visible' : ''
+        }`}
+      >
+        <div className="desktop-menu-reveal">
+          <DesktopMenuBar displayMode={displayMode} />
+        </div>
 
-        <div className="relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 lg:p-0">
+        <div className="desktop-window-reveal relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 lg:p-0">
           <div className="flex h-full flex-col gap-4 lg:hidden">
             {displayMode === 'cli' ? (
               <div className="min-h-0 flex-1">

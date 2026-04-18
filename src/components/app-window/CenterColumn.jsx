@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import { AboutContent } from './AboutContent';
+import { Composer } from './Composer';
 import { ContactContent } from './ContactContent';
 import { WorkDetailContent } from './WorkDetailContent';
 import { WorksOverviewContent } from './WorksOverviewContent';

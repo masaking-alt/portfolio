@@ -773,6 +773,7 @@ function TerminalWindowShell({
 
 function OnloadAnimation() {
   const [hasWindowLoaded, setHasWindowLoaded] = useState(false);
+  const [isBackground, setIsBackground] = useState(false);
   const dotLottieRef = useRef(null);
   const completeHandlerRef = useRef(null);
 
@@ -793,9 +794,11 @@ function OnloadAnimation() {
     }
 
     const handleComplete = () => {
-      const lastFrame = Math.max(0, dotLottie.totalFrames - 1);
-      dotLottie.setFrame(lastFrame);
+      if (typeof dotLottie.totalFrames === 'number' && dotLottie.totalFrames > 0) {
+        dotLottie.setFrame(dotLottie.totalFrames - 1);
+      }
       dotLottie.pause();
+      setIsBackground(true);
     };
 
     dotLottie.addEventListener('complete', handleComplete);
@@ -821,17 +824,21 @@ function OnloadAnimation() {
   }
 
   return (
-    <DotLottieReact
+    <div
       aria-hidden="true"
-      autoplay
-      backgroundColor={PAGE_BACKGROUND_COLOR}
-      className="block h-full w-full"
-      dotLottieRefCallback={handleDotLottieRef}
-      layout={{ fit: 'cover', align: [0.5, 0.5] }}
-      loop={false}
-      src="/onload.lottie"
-      style={{ display: 'block', height: '100%', width: '100%' }}
-    />
+      className={`onload-lottie ${isBackground ? 'onload-lottie--background' : 'onload-lottie--intro'}`}
+    >
+      <DotLottieReact
+        autoplay
+        backgroundColor={PAGE_BACKGROUND_COLOR}
+        className="block h-full w-full"
+        dotLottieRefCallback={handleDotLottieRef}
+        layout={{ fit: 'cover', align: [0.5, 0.5] }}
+        loop={false}
+        src="/onload.lottie"
+        style={{ display: 'block', height: '100%', width: '100%' }}
+      />
+    </div>
   );
 }
 
@@ -840,9 +847,7 @@ function DesktopBackdrop() {
     <div
       className="pointer-events-none absolute inset-0 overflow-hidden"
       style={{ backgroundColor: PAGE_BACKGROUND_COLOR }}
-    >
-      <OnloadAnimation />
-    </div>
+    />
   );
 }
 
@@ -2016,8 +2021,9 @@ function WorkspaceScreen({
       style={{ backgroundColor: PAGE_BACKGROUND_COLOR }}
     >
       <DesktopBackdrop />
+      <OnloadAnimation />
 
-      <div className="relative flex h-full flex-col overflow-hidden">
+      <div className="relative z-10 flex h-full flex-col overflow-hidden">
         <DesktopMenuBar displayMode={displayMode} />
 
         <div className="relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 lg:p-0">

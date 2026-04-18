@@ -49,6 +49,23 @@ a {
   box-shadow: none !important;
 }
 
+.onload-lottie {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.onload-lottie--intro {
+  z-index: 60;
+  background: #F7F3DE;
+  pointer-events: auto;
+}
+
+.onload-lottie--background {
+  z-index: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .desktop-window-frame,
   .desktop-window-surface {

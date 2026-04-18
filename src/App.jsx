@@ -235,7 +235,7 @@ function getModeLabel(displayMode) {
   if (displayMode === 'app') {
     return 'Masaking App';
   }
-  return 'Terminal standby';
+  return 'terminal';
 }
 
 function buildTopDiffEntries() {
@@ -854,16 +854,13 @@ function DesktopBackdrop() {
 
 function DesktopMenuBar({ displayMode }) {
   return (
-    <div className="relative z-40 flex h-9 items-center justify-between border-b border-white/[0.08] bg-black px-4 text-[12px] text-white/72">
+    <div className="relative z-40 flex h-9 items-center justify-between px-4 text-[12px] text-black/68">
       <div className="flex min-w-0 items-center gap-4">
         <img src="/favicon.png" alt="" className="h-4 w-4 rounded-[4px]" />
-        <span className="font-semibold text-white/88">masaking.desktop</span>
+        <span className="font-semibold text-black/86">{getModeLabel(displayMode)}</span>
         <span>Session</span>
         <span>Portfolio</span>
         <span>Window</span>
-        <span className="truncate rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-[10.5px] uppercase tracking-[0.12em] text-white/52">
-          {getModeLabel(displayMode)}
-        </span>
       </div>
 
       <div className="flex items-center gap-3">

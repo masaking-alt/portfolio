@@ -17,7 +17,8 @@ import {
   Settings,
   SquarePen,
 } from 'lucide-react';
-import { createElement, useEffect, useRef, useState } from 'react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { createElement, useCallback, useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { works } from './works';
@@ -191,6 +192,7 @@ const PROFILE_ASCII_LINES = [
 const AVAILABLE_COMMANDS_TEXT = 'available commands: "masaking" , "masaking app" , "help" , "clear"';
 const CLI_COMMANDS_TEXT = 'CLI commands: "/top" , "/works" , "/about" , "/contact"';
 const TERMINAL_PROMPT = 'Visitor@MasakingPortfolio >';
+const PAGE_BACKGROUND_COLOR = '#F7F3DE';
 const CLI_HOME_OVERVIEW_ROWS = [
   ['Mode', 'Terminal-first portfolio'],
   ['Focus', 'Works, profile, contact'],
@@ -769,8 +771,79 @@ function TerminalWindowShell({
   );
 }
 
+function OnloadAnimation() {
+  const [hasWindowLoaded, setHasWindowLoaded] = useState(false);
+  const dotLottieRef = useRef(null);
+  const completeHandlerRef = useRef(null);
+
+  const cleanupCompleteListener = useCallback(() => {
+    if (dotLottieRef.current && completeHandlerRef.current) {
+      dotLottieRef.current.removeEventListener('complete', completeHandlerRef.current);
+    }
+
+    completeHandlerRef.current = null;
+  }, []);
+
+  const handleDotLottieRef = useCallback((dotLottie) => {
+    cleanupCompleteListener();
+    dotLottieRef.current = dotLottie;
+
+    if (!dotLottie) {
+      return;
+    }
+
+    const handleComplete = () => {
+      const lastFrame = Math.max(0, dotLottie.totalFrames - 1);
+      dotLottie.setFrame(lastFrame);
+      dotLottie.pause();
+    };
+
+    dotLottie.addEventListener('complete', handleComplete);
+    completeHandlerRef.current = handleComplete;
+  }, [cleanupCompleteListener]);
+
+  useEffect(() => {
+    if (document.readyState === 'complete') {
+      setHasWindowLoaded(true);
+      return undefined;
+    }
+
+    const handleWindowLoad = () => setHasWindowLoaded(true);
+    window.addEventListener('load', handleWindowLoad, { once: true });
+
+    return () => window.removeEventListener('load', handleWindowLoad);
+  }, []);
+
+  useEffect(() => cleanupCompleteListener, [cleanupCompleteListener]);
+
+  if (!hasWindowLoaded) {
+    return null;
+  }
+
+  return (
+    <DotLottieReact
+      aria-hidden="true"
+      autoplay
+      backgroundColor={PAGE_BACKGROUND_COLOR}
+      className="block h-full w-full"
+      dotLottieRefCallback={handleDotLottieRef}
+      layout={{ fit: 'cover', align: [0.5, 0.5] }}
+      loop={false}
+      src="/onload.lottie"
+      style={{ display: 'block', height: '100%', width: '100%' }}
+    />
+  );
+}
+
 function DesktopBackdrop() {
-  return <div className="pointer-events-none absolute inset-0 bg-black" />;
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+      style={{ backgroundColor: PAGE_BACKGROUND_COLOR }}
+    >
+      <OnloadAnimation />
+    </div>
+  );
 }
 
 function DesktopMenuBar({ displayMode }) {
@@ -1938,7 +2011,10 @@ function WorkspaceScreen({
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-black text-white antialiased">
+    <div
+      className="relative h-screen w-screen overflow-hidden text-white antialiased"
+      style={{ backgroundColor: PAGE_BACKGROUND_COLOR }}
+    >
       <DesktopBackdrop />
 
       <div className="relative flex h-full flex-col overflow-hidden">

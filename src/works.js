@@ -42,7 +42,7 @@ export const works = [
     description: "高知大学 Moodle を快適に使うための Chrome 拡張。ダッシュボードやコース画面をダークテーマで再構成し、課題・イベントを色分けカードで強調。リソースを自動収集する「資料」タブやメディア保存ボタン、クイズ画面の視認性改善など、学習体験を底上げする施策をコンテンツスクリプトでまとめて提供しています。",
     category: "Chrome拡張",
     imageUrl: "/moodle-enhancer.jpeg",
-    externalUrl: "https://chromewebstore.google.com/detail/moodle-dashboard-tweaks/jmnmogonkjhmhgcncebieodddgbaamfg",
+    externalUrl: "https://chromewebstore.google.com/detail/moodle-enhancer-for-kochi/jmnmogonkjhmhgcncebieodddgbaamfg",
     technologies: ["Chrome Extension (Manifest V3)", "JavaScript", "Content Script", "CSS"],
   },
   {
@@ -52,7 +52,7 @@ export const works = [
     category: "Webサイト",
     imageUrl: "/soueiken-hp.jpeg",
     externalUrl: "https://soueiken-hp.pages.dev/",
-    technologies: ["React", "Fetch API", "CSS", "自作 Markdown レンダラー","Cloudflare Pages","Firestore","チーム開発"],
+    technologies: ["Next.js", "React", "CSS", "Cloudflare Pages", "Cloudflare Workers", "Cloudflare D1","チーム開発"],
   },
   {
     id: 'part-time-shift',

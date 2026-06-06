@@ -32,6 +32,7 @@ export function WorkspaceScreen({
     desktopViewportRef,
     dragState,
     terminalShellProps,
+    visibleWindows,
     windowFrameRefs,
     windowFrames,
   } = useDesktopWindows(displayMode);
@@ -55,21 +56,25 @@ export function WorkspaceScreen({
         <div className="desktop-window-reveal relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 lg:p-0">
           <div className="flex h-full flex-col gap-4 lg:hidden">
             {displayMode === 'cli' ? (
-              <div className="min-h-0 flex-1">
-                <LauncherTerminalWindow
-                  threadType={effectiveThreadType}
-                  selectedWork={selectedWork}
-                  threadState={threadState}
-                  displayMode={displayMode}
-                  terminalCommand={terminalCommand}
-                  terminalLog={terminalLog}
-                  onTerminalCommandChange={onTerminalCommandChange}
-                  onTerminalSubmit={onTerminalSubmit}
-                />
-              </div>
+              visibleWindows.terminal ? (
+                <div className="min-h-0 flex-1">
+                  <LauncherTerminalWindow
+                    threadType={effectiveThreadType}
+                    selectedWork={selectedWork}
+                    threadState={threadState}
+                    displayMode={displayMode}
+                    terminalCommand={terminalCommand}
+                    terminalLog={terminalLog}
+                    onTerminalCommandChange={onTerminalCommandChange}
+                    onTerminalSubmit={onTerminalSubmit}
+                    shellProps={terminalShellProps}
+                  />
+                </div>
+              ) : null
             ) : (
               <>
-                <div className="shrink-0">
+                {visibleWindows.terminal ? (
+                  <div className="shrink-0">
                     <LauncherTerminalWindow
                       threadType={effectiveThreadType}
                       selectedWork={selectedWork}
@@ -79,12 +84,19 @@ export function WorkspaceScreen({
                       terminalLog={terminalLog}
                       onTerminalCommandChange={onTerminalCommandChange}
                       onTerminalSubmit={onTerminalSubmit}
+                      shellProps={terminalShellProps}
                     />
-                </div>
+                  </div>
+                ) : null}
 
-                {displayMode === 'app' ? (
+                {visibleWindows.app ? (
                   <div className="min-h-0 flex-1">
-                    <AppWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
+                    <AppWindow
+                      threadType={effectiveThreadType}
+                      selectedWork={selectedWork}
+                      threadState={threadState}
+                      shellProps={appShellProps}
+                    />
                   </div>
                 ) : null}
               </>
@@ -92,19 +104,20 @@ export function WorkspaceScreen({
           </div>
 
           <div ref={desktopViewportRef} className="relative hidden h-full lg:block">
-            <div
-              ref={(node) => {
-                windowFrameRefs.current.terminal = node;
-              }}
-              style={{
-                left: `${windowFrames.terminal.x}px`,
-                top: `${windowFrames.terminal.y}px`,
-                width: `${windowFrames.terminal.width}px`,
-                height: `${windowFrames.terminal.height}px`,
-                zIndex: activeWindow === 'terminal' ? 30 : 20,
-              }}
-              className={`desktop-window-frame absolute ${dragState?.key === 'terminal' ? 'desktop-window-frame--dragging' : ''}`}
-            >
+            {visibleWindows.terminal ? (
+              <div
+                ref={(node) => {
+                  windowFrameRefs.current.terminal = node;
+                }}
+                style={{
+                  left: `${windowFrames.terminal.x}px`,
+                  top: `${windowFrames.terminal.y}px`,
+                  width: `${windowFrames.terminal.width}px`,
+                  height: `${windowFrames.terminal.height}px`,
+                  zIndex: activeWindow === 'terminal' ? 30 : 20,
+                }}
+                className={`desktop-window-frame absolute ${dragState?.key === 'terminal' ? 'desktop-window-frame--dragging' : ''}`}
+              >
                 <LauncherTerminalWindow
                   threadType={effectiveThreadType}
                   selectedWork={selectedWork}
@@ -115,10 +128,11 @@ export function WorkspaceScreen({
                   onTerminalCommandChange={onTerminalCommandChange}
                   onTerminalSubmit={onTerminalSubmit}
                   shellProps={terminalShellProps}
-              />
-            </div>
+                />
+              </div>
+            ) : null}
 
-            {displayMode === 'app' ? (
+            {visibleWindows.app ? (
               <div
                 ref={(node) => {
                   windowFrameRefs.current.app = node;

@@ -4,6 +4,7 @@ export function TerminalWindowShell({
   title,
   onWindowPointerDown,
   onHeaderPointerDown,
+  onClose,
   onToggleMaximize,
   isMaximized = false,
   active = false,
@@ -23,7 +24,7 @@ export function TerminalWindowShell({
           onHeaderPointerDown ? 'cursor-grab active:cursor-grabbing' : ''
         }`}
       >
-        <WindowControlButtons onToggleMaximize={onToggleMaximize} isMaximized={isMaximized} />
+        <WindowControlButtons onClose={onClose} onToggleMaximize={onToggleMaximize} isMaximized={isMaximized} />
 
         <div className="min-w-0 flex-1 px-4 text-center text-[11px] font-medium text-white/72">
           <span className="truncate">{title}</span>

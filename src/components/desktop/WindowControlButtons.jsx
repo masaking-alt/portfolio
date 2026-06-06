@@ -1,11 +1,14 @@
-export function WindowControlButtons({ onToggleMaximize, isMaximized = false, className = '' }) {
+export function WindowControlButtons({ onClose, onToggleMaximize, isMaximized = false, className = '' }) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <button
         type="button"
         aria-label="close window"
         onPointerDown={(event) => event.stopPropagation()}
-        onClick={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onClose?.();
+        }}
         className="h-3 w-3 rounded-full bg-[#ff5f57]"
       />
       <button

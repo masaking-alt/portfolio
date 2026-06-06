@@ -11,6 +11,7 @@ export function useDesktopWindows(displayMode) {
     getDesktopWindowFrames(desktopArea.width, desktopArea.height, displayMode),
   );
   const [activeWindow, setActiveWindow] = useState(displayMode === 'app' ? 'app' : 'terminal');
+  const [closedWindows, setClosedWindows] = useState(() => ({ terminal: false, app: false }));
   const [dragState, setDragState] = useState(null);
   const windowFrameRefs = useRef({ terminal: null, app: null });
   const windowAnimationRefs = useRef({ terminal: null, app: null });
@@ -132,6 +133,12 @@ export function useDesktopWindows(displayMode) {
   }, []);
 
   useEffect(() => {
+    setClosedWindows({ terminal: false, app: false });
+    setActiveWindow(displayMode === 'app' ? 'app' : 'terminal');
+    setDragState(null);
+  }, [displayMode]);
+
+  useEffect(() => {
     if (!isDesktop) {
       previousDisplayModeRef.current = displayMode;
       return;
@@ -199,6 +206,10 @@ export function useDesktopWindows(displayMode) {
   }, [desktopArea.height, desktopArea.width, dragState, isDesktop]);
 
   function focusWindow(windowKey) {
+    if (closedWindows[windowKey]) {
+      return;
+    }
+
     setActiveWindow(windowKey);
   }
 
@@ -224,7 +235,7 @@ export function useDesktopWindows(displayMode) {
   }
 
   function toggleWindowMaximize(windowKey) {
-    if (!isDesktop) {
+    if (!isDesktop || closedWindows[windowKey]) {
       return;
     }
 
@@ -270,9 +281,39 @@ export function useDesktopWindows(displayMode) {
     playWindowFrameFlip(windowKey, firstRect, nextFrame);
   }
 
+  function closeWindow(windowKey) {
+    cancelWindowFrameAnimation(windowKey, true);
+    setDragState((currentDragState) => (currentDragState?.key === windowKey ? null : currentDragState));
+    setClosedWindows((currentClosedWindows) => ({
+      ...currentClosedWindows,
+      [windowKey]: true,
+    }));
+    setActiveWindow((currentActiveWindow) => {
+      if (currentActiveWindow !== windowKey) {
+        return currentActiveWindow;
+      }
+
+      if (windowKey === 'app' && !closedWindows.terminal) {
+        return 'terminal';
+      }
+
+      if (windowKey === 'terminal' && displayMode === 'app' && !closedWindows.app) {
+        return 'app';
+      }
+
+      return null;
+    });
+  }
+
+  const visibleWindows = {
+    terminal: !closedWindows.terminal,
+    app: displayMode === 'app' && !closedWindows.app,
+  };
+
   const terminalShellProps = {
     active: activeWindow === 'terminal',
     isMaximized: Boolean(windowFrames.terminal?.isMaximized),
+    onClose: () => closeWindow('terminal'),
     onWindowPointerDown: () => focusWindow('terminal'),
     onHeaderPointerDown: (event) => startWindowDrag('terminal', event),
     onToggleMaximize: () => toggleWindowMaximize('terminal'),
@@ -281,6 +322,7 @@ export function useDesktopWindows(displayMode) {
   const appShellProps = {
     active: activeWindow === 'app',
     isMaximized: Boolean(windowFrames.app?.isMaximized),
+    onClose: () => closeWindow('app'),
     onWindowPointerDown: () => focusWindow('app'),
     onHeaderPointerDown: (event) => startWindowDrag('app', event),
     onToggleMaximize: () => toggleWindowMaximize('app'),
@@ -292,6 +334,7 @@ export function useDesktopWindows(displayMode) {
     desktopViewportRef,
     dragState,
     terminalShellProps,
+    visibleWindows,
     windowFrameRefs,
     windowFrames,
   };

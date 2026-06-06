@@ -9,7 +9,7 @@ export function CenterColumn({ threadType, selectedWork, threadState, scrollRef 
   const isWorkDetail = Boolean(selectedWork);
 
   return (
-    <section className="order-2 flex min-h-0 flex-col overflow-hidden bg-[#111112] lg:order-none lg:col-start-2 lg:row-start-2 lg:border-r lg:border-white/[0.05]">
+    <section className="order-2 row-start-2 flex min-h-0 flex-col overflow-hidden bg-[#111112] lg:order-none lg:col-start-2 lg:row-start-2 lg:border-r lg:border-white/[0.05]">
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 pb-10 pt-9 lg:px-10 custom-scrollbar">
         <div className="mx-auto max-w-[820px]">
           <div className="ml-auto flex max-w-[560px] flex-col items-end">

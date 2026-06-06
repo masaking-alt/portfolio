@@ -54,7 +54,7 @@ export function WorkspaceScreen({
         </div>
 
         <div className="desktop-window-reveal relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 lg:p-0">
-          <div className="flex h-full flex-col gap-4 lg:hidden">
+          <div className="relative flex h-full min-h-0 flex-col gap-4 overflow-hidden lg:hidden">
             {displayMode === 'cli' ? (
               visibleWindows.terminal ? (
                 <div className="min-h-0 flex-1">
@@ -74,7 +74,7 @@ export function WorkspaceScreen({
             ) : (
               <>
                 {visibleWindows.terminal ? (
-                  <div className={terminalShellProps.isMaximized ? 'min-h-0 flex-1' : 'shrink-0'}>
+                  <div className={`relative z-10 ${terminalShellProps.isMaximized ? 'min-h-0 flex-1' : 'shrink-0'}`}>
                     <LauncherTerminalWindow
                       threadType={effectiveThreadType}
                       selectedWork={selectedWork}
@@ -90,7 +90,7 @@ export function WorkspaceScreen({
                 ) : null}
 
                 {visibleWindows.app ? (
-                  <div className="min-h-0 flex-1">
+                  <div className="absolute inset-0 z-20 min-h-0">
                     <AppWindow
                       threadType={effectiveThreadType}
                       selectedWork={selectedWork}

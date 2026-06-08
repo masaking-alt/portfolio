@@ -65,7 +65,7 @@ export function OnloadAnimation({ onComplete }) {
         backgroundColor={PAGE_BACKGROUND_COLOR}
         className="block h-full w-full"
         dotLottieRefCallback={handleDotLottieRef}
-        layout={{ fit: 'cover', align: [0.5, 0.5] }}
+        layout={{ fit: 'fit-width', align: [0.5, 0.5] }}
         loop={false}
         src="/onload.lottie"
         style={{ display: 'block', height: '100%', width: '100%' }}

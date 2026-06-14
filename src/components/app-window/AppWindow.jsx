@@ -98,7 +98,7 @@ export function AppWindow({ threadType, selectedWork, threadState, shellProps = 
   const gridStyle = isDesktop
     ? { gridTemplateColumns: `${columnWidths.left}px minmax(0, 1fr) ${columnWidths.right}px` }
     : undefined;
-  const { onHeaderPointerDown, onToggleMaximize, isMaximized } = shellProps;
+  const { onHeaderPointerDown, onClose, onToggleMaximize, isMaximized } = shellProps;
 
   return (
     <WindowShell
@@ -116,6 +116,7 @@ export function AppWindow({ threadType, selectedWork, threadState, shellProps = 
             activeThreadType={threadType}
             selectedWorkId={selectedWork?.id ?? null}
             onHeaderPointerDown={onHeaderPointerDown}
+            onClose={onClose}
             onToggleMaximize={onToggleMaximize}
             isMaximized={isMaximized}
           />

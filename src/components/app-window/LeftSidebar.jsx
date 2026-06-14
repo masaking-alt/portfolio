@@ -17,6 +17,7 @@ export function LeftSidebar({
   activeThreadType,
   selectedWorkId,
   onHeaderPointerDown,
+  onClose,
   onToggleMaximize,
   isMaximized = false,
 }) {
@@ -50,7 +51,7 @@ export function LeftSidebar({
         }`}
       >
         <div className="flex items-center justify-between">
-          <WindowControlButtons onToggleMaximize={onToggleMaximize} isMaximized={isMaximized} />
+          <WindowControlButtons onClose={onClose} onToggleMaximize={onToggleMaximize} isMaximized={isMaximized} />
           <div className="flex items-center gap-1 text-white/28">
             <button
               type="button"

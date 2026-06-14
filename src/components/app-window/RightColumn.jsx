@@ -4,11 +4,15 @@ import { AddOnlyImageDiff } from './AddOnlyImageDiff';
 import { AddOnlyTextDiff } from './AddOnlyTextDiff';
 import { DiffHeader } from './DiffHeader';
 
-export function RightColumn({ diffEntries, scrollRef }) {
+export function RightColumn({ diffEntries, scrollRef, variant = 'desktop' }) {
   const totalAddedLines = getAddedLineCount(diffEntries);
 
   return (
-    <aside className="order-3 flex min-h-0 flex-col overflow-hidden bg-[#121212] lg:order-none lg:col-start-3 lg:row-start-2">
+    <aside
+      className={`min-h-0 flex-col overflow-hidden bg-[#121212] ${
+        variant === 'drawer' ? 'flex h-full w-full border-l border-white/[0.08]' : 'hidden lg:order-none lg:col-start-3 lg:row-start-2 lg:flex'
+      }`}
+    >
       <div className="flex h-10 items-center justify-between px-3">
         <div className="flex items-center gap-1.5 text-white/80">
           <ChevronRight className="h-3.5 w-3.5 text-white/38" />

@@ -61,11 +61,19 @@ export function SshConnectScreen({ onBackHome }) {
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.42)_0%,rgba(255,255,255,0.10)_34%,rgba(232,149,126,0.18)_100%)]" />
         <div className="relative grid h-10 grid-cols-[1fr_auto_1fr] items-center border-b border-white/[0.26] bg-white/[0.28] px-3 shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)]">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+
+              <button
+                type="button"
+                onClick={onBackHome}
+                aria-label='Delete CLI menu'
+                className="h-3 w-3 rounded-full bg-[#ff5f57]"
+              >
+              </button>
+
             <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
             <span className="h-3 w-3 rounded-full bg-[#28c840]" />
           </div>
-          <div className="min-w-0 px-3 text-center text-[12px] font-semibold text-black/[0.58]">Masaking CUI</div>
+          <div className="min-w-0 px-3 text-center text-[12px] font-semibold text-black/[0.58]">Masaking CLI</div>
           <button
             type="button"
             onClick={onBackHome}

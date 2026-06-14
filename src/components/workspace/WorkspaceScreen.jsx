@@ -26,6 +26,9 @@ export function WorkspaceScreen({
   const handleOnloadAnimationComplete = useCallback(() => {
     setHasIntroCompleted(true);
   }, []);
+  const handleAppWindowClose = useCallback(() => {
+    onBackHome?.();
+  }, [onBackHome]);
   const {
     activeWindow,
     appShellProps,
@@ -34,6 +37,10 @@ export function WorkspaceScreen({
     windowFrameRefs,
     windowFrames,
   } = useDesktopWindows(displayMode);
+  const appWindowShellProps = {
+    ...appShellProps,
+    onClose: handleAppWindowClose,
+  };
   return (
     <div
       className="relative h-screen w-screen overflow-hidden text-white antialiased"
@@ -61,7 +68,12 @@ export function WorkspaceScreen({
           {displayMode === 'app' ? (
             <>
               <div className="flex h-full min-h-0 flex-col lg:hidden">
-                <AppWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
+                <AppWindow
+                  threadType={effectiveThreadType}
+                  selectedWork={selectedWork}
+                  threadState={threadState}
+                  shellProps={appWindowShellProps}
+                />
               </div>
 
               <div ref={desktopViewportRef} className="relative hidden h-full lg:block">
@@ -82,7 +94,7 @@ export function WorkspaceScreen({
                     threadType={effectiveThreadType}
                     selectedWork={selectedWork}
                     threadState={threadState}
-                    shellProps={appShellProps}
+                    shellProps={appWindowShellProps}
                   />
                 </div>
               </div>

@@ -4,19 +4,31 @@ import { ArrowLeft, Check, Copy, Terminal } from 'lucide-react';
 const SSH_COMMAND = 'ssh ssh.masaking.net';
 
 function copyTextWithSelectionFallback(text) {
+  const activeElement = document.activeElement;
+  const selection = document.getSelection();
+  const ranges = selection
+    ? Array.from({ length: selection.rangeCount }, (_, index) => selection.getRangeAt(index).cloneRange())
+    : [];
   const textarea = document.createElement('textarea');
   textarea.value = text;
   textarea.setAttribute('readonly', '');
   textarea.style.position = 'fixed';
-  textarea.style.left = '-9999px';
   textarea.style.top = '0';
+  textarea.style.left = '0';
+  textarea.style.width = '1px';
+  textarea.style.height = '1px';
+  textarea.style.opacity = '0';
 
   document.body.appendChild(textarea);
+  textarea.focus({ preventScroll: true });
   textarea.select();
   textarea.setSelectionRange(0, text.length);
 
   const didCopy = document.execCommand('copy');
   document.body.removeChild(textarea);
+  selection?.removeAllRanges();
+  ranges.forEach((range) => selection?.addRange(range));
+  activeElement?.focus?.({ preventScroll: true });
 
   if (!didCopy) {
     throw new Error('Copy command failed');
@@ -44,9 +56,10 @@ export function SshConnectScreen({ onBackHome }) {
 
   return (
     <main className="relative flex h-full min-h-0 items-center justify-center overflow-hidden px-4 py-8 sm:px-6">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(247,243,222,0.05)_48%,rgba(0,0,0,0.10)_100%)]" />
-      <section className="relative w-full max-w-[520px] overflow-hidden rounded-[22px] border border-white/[0.62] bg-[#f7f3de]/[0.72] text-black shadow-[0_34px_90px_rgba(35,38,48,0.28),inset_0_1px_0_rgba(255,255,255,0.52)] backdrop-blur-2xl">
-        <div className="grid h-10 grid-cols-[1fr_auto_1fr] items-center border-b border-black/[0.08] bg-white/[0.38] px-3">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_54%_42%,rgba(255,255,255,0.24)_0%,rgba(255,255,255,0.10)_34%,rgba(0,0,0,0.08)_100%)]" />
+      <section className="relative w-full max-w-[560px] overflow-hidden rounded-[24px] border border-white/[0.58] bg-[#f7f3de]/[0.46] text-black shadow-[0_36px_95px_rgba(35,38,48,0.30),inset_0_1px_0_rgba(255,255,255,0.72),inset_0_-1px_0_rgba(255,255,255,0.18)] backdrop-blur-2xl">
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.42)_0%,rgba(255,255,255,0.10)_34%,rgba(232,149,126,0.18)_100%)]" />
+        <div className="relative grid h-10 grid-cols-[1fr_auto_1fr] items-center border-b border-white/[0.26] bg-white/[0.28] px-3 shadow-[inset_0_-1px_0_rgba(0,0,0,0.04)]">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
             <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
@@ -63,38 +76,35 @@ export function SshConnectScreen({ onBackHome }) {
           </button>
         </div>
 
-        <div className="px-5 py-6 sm:px-7 sm:py-7">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[17px] border border-white/[0.16] bg-[#171717] text-[#32d74b] shadow-[0_16px_34px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.12)] sm:h-16 sm:w-16">
-              <Terminal className="h-8 w-8" strokeWidth={1.9} />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-[24px] font-semibold leading-tight text-black/[0.86] sm:text-[30px]">Connect from your terminal.</h1>
-            </div>
+        <div className="relative px-5 py-6 sm:px-7 sm:py-7">
+          <div className="flex items-center gap-3 rounded-[22px] border border-white/[0.62] bg-[#fffbed]/[0.54] px-3 py-3 shadow-[0_18px_46px_rgba(35,38,48,0.14),inset_0_1px_0_rgba(255,255,255,0.82),inset_0_-1px_0_rgba(255,255,255,0.24)] backdrop-blur-xl sm:px-4">
+            <code className="min-w-0 flex-1 select-all overflow-x-auto whitespace-nowrap px-1 font-mono text-[17px] font-semibold leading-8 text-black/[0.86] [text-shadow:0_1px_1px_rgba(255,255,255,0.64)] custom-scrollbar sm:text-[22px]">
+              {SSH_COMMAND}
+            </code>
+            <button
+              type="button"
+              aria-label={hasCopied ? 'SSH command copied' : 'Copy SSH command'}
+              title={hasCopied ? 'Copied' : 'Copy'}
+              onClick={handleCopyCommand}
+              className="inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-[15px] border border-white/[0.66] bg-white/[0.50] text-black/[0.78] shadow-[0_10px_24px_rgba(35,38,48,0.12),inset_0_1px_0_rgba(255,255,255,0.88)] backdrop-blur-xl transition duration-150 hover:bg-white/[0.72] hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/[0.22]"
+            >
+              {hasCopied ? <Check className="h-4.5 w-4.5" /> : <Copy className="h-4.5 w-4.5" />}
+            </button>
           </div>
 
-          <div className="mt-6 rounded-[18px] border border-black/[0.10] bg-[#121417] p-3 shadow-[0_16px_42px_rgba(13,16,23,0.18),inset_0_1px_0_rgba(255,255,255,0.10)]">
-            <div className="mb-2 flex items-center justify-between px-1 text-[11px] font-medium text-white/42">
-              <span>terminal</span>
-              <span>ssh</span>
+          <div className="mt-5 flex items-center gap-3 px-1">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border border-white/[0.16] bg-[#171717] text-[#32d74b] shadow-[0_12px_28px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.12)]">
+              <Terminal className="h-6 w-6" strokeWidth={1.9} />
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <code className="min-w-0 flex-1 select-all overflow-x-auto whitespace-nowrap rounded-xl border border-white/[0.08] bg-black/45 px-4 py-3 font-mono text-[14px] leading-6 text-[#f3f3f3] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] custom-scrollbar">
-                {SSH_COMMAND}
-              </code>
-              <button
-                type="button"
-                onClick={handleCopyCommand}
-                className="inline-flex h-12 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#f6f3e7] px-4 text-[13px] font-semibold text-[#171717] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] transition hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/55"
-              >
-                {hasCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                {hasCopied ? 'Copied' : 'Copy command'}
-              </button>
-            </div>
+            <h1 className="min-w-0 text-[16px] font-semibold leading-6 text-black/[0.78] sm:text-[18px]">Connect from your terminal.</h1>
+          </div>
+
+          <div className="sr-only" aria-live="polite">
+            {hasCopied ? 'SSH command copied.' : ''}
           </div>
 
           {copyState === 'failed' ? (
-            <div className="mt-3 text-[12px] text-black/[0.46]">Select the command and copy it manually.</div>
+            <div className="mt-3 text-[12px] text-black/[0.52]" role="alert">Select the command and copy it manually.</div>
           ) : null}
         </div>
       </section>

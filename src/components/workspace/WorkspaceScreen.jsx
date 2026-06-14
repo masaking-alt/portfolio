@@ -58,7 +58,7 @@ export function WorkspaceScreen({
           <DesktopMenuBar displayMode={displayMode} onBackHome={onBackHome} />
         </div>
 
-        <div className="desktop-window-reveal relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 lg:p-0">
+        <div className="desktop-window-reveal relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 ">
           {displayMode === 'home' ? (
             <MacosHomeScreen onSelectCui={onSelectCui} onSelectGui={onSelectGui} />
           ) : null}

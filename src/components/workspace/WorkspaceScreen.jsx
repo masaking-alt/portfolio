@@ -74,7 +74,7 @@ export function WorkspaceScreen({
             ) : (
               <>
                 {visibleWindows.terminal ? (
-                  <div className="shrink-0">
+                  <div className={terminalShellProps.isMaximized ? 'min-h-0 flex-1' : 'shrink-0'}>
                     <LauncherTerminalWindow
                       threadType={effectiveThreadType}
                       selectedWork={selectedWork}

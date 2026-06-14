@@ -117,7 +117,7 @@ export function AppWindow({ threadType, selectedWork, threadState, shellProps = 
     >
       <div ref={containerRef} className="relative h-full min-h-0 flex-1 overflow-hidden bg-[#111112]">
         <div
-          className="grid h-full w-full grid-cols-1 auto-rows-max lg:grid-cols-[268px_minmax(0,1fr)_864px] lg:grid-rows-[40px_minmax(0,1fr)]"
+          className="grid h-full min-h-0 w-full grid-cols-1 grid-rows-[40px_minmax(0,1fr)] lg:grid-cols-[268px_minmax(0,1fr)_864px] lg:grid-rows-[40px_minmax(0,1fr)]"
           style={gridStyle}
         >
           <LeftSidebar

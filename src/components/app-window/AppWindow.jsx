@@ -16,6 +16,7 @@ export function AppWindow({ threadType, selectedWork, threadState, shellProps = 
   const [containerWidth, setContainerWidth] = useState(0);
   const [draggingDivider, setDraggingDivider] = useState(null);
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
+  const [mobilePanel, setMobilePanel] = useState(null);
   const [columnWidths, setColumnWidths] = useState(() => {
     try {
       const savedWidths = JSON.parse(window.localStorage.getItem('portfolio-column-widths') ?? 'null');
@@ -50,6 +51,12 @@ export function AppWindow({ threadType, selectedWork, threadState, shellProps = 
     }
     setColumnWidths((currentWidths) => clampColumnWidths(currentWidths, containerWidth));
   }, [containerWidth, isDesktop]);
+
+  useEffect(() => {
+    if (isDesktop) {
+      setMobilePanel(null);
+    }
+  }, [isDesktop]);
 
   useEffect(() => {
     window.localStorage.setItem('portfolio-column-widths', JSON.stringify(columnWidths));
@@ -87,6 +94,7 @@ export function AppWindow({ threadType, selectedWork, threadState, shellProps = 
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setMobilePanel(null);
     if (centerScrollRef.current) {
       centerScrollRef.current.scrollTop = 0;
     }
@@ -109,7 +117,7 @@ export function AppWindow({ threadType, selectedWork, threadState, shellProps = 
     >
       <div ref={containerRef} className="relative h-full min-h-0 flex-1 overflow-hidden bg-[#111112]">
         <div
-          className="grid h-full w-full grid-cols-1 auto-rows-max lg:grid-cols-[268px_minmax(0,1fr)_864px] lg:grid-rows-[40px_minmax(0,1fr)]"
+          className="grid h-full min-h-0 w-full grid-cols-1 grid-rows-[40px_minmax(0,1fr)] lg:grid-cols-[268px_minmax(0,1fr)_864px] lg:grid-rows-[40px_minmax(0,1fr)]"
           style={gridStyle}
         >
           <LeftSidebar
@@ -120,7 +128,13 @@ export function AppWindow({ threadType, selectedWork, threadState, shellProps = 
             onToggleMaximize={onToggleMaximize}
             isMaximized={isMaximized}
           />
-          <TopBar title={threadState.title} addedCount={addedCount} onHeaderPointerDown={onHeaderPointerDown} />
+          <TopBar
+            title={threadState.title}
+            addedCount={addedCount}
+            onHeaderPointerDown={onHeaderPointerDown}
+            onOpenLeftPanel={() => setMobilePanel('left')}
+            onOpenRightPanel={() => setMobilePanel('right')}
+          />
           <CenterColumn
             threadType={threadType}
             selectedWork={selectedWork}
@@ -129,6 +143,41 @@ export function AppWindow({ threadType, selectedWork, threadState, shellProps = 
           />
           <RightColumn diffEntries={threadState.diffEntries} scrollRef={rightScrollRef} />
         </div>
+
+        {mobilePanel ? (
+          <button
+            type="button"
+            aria-label="パネルを閉じる"
+            className="absolute inset-0 z-40 bg-black/55 lg:hidden"
+            onClick={() => setMobilePanel(null)}
+          />
+        ) : null}
+
+        {mobilePanel === 'left' ? (
+          <div
+            className="absolute inset-y-0 left-0 z-50 w-[min(320px,calc(100%-48px))] bg-[#141415] lg:hidden"
+            onClick={(event) => {
+              if (event.target.closest('a')) {
+                setMobilePanel(null);
+              }
+            }}
+          >
+            <LeftSidebar
+              activeThreadType={threadType}
+              selectedWorkId={selectedWork?.id ?? null}
+              onClose={onClose}
+              onToggleMaximize={onToggleMaximize}
+              isMaximized={isMaximized}
+              variant="drawer"
+            />
+          </div>
+        ) : null}
+
+        {mobilePanel === 'right' ? (
+          <div className="absolute inset-y-0 right-0 z-50 w-[min(360px,calc(100%-48px))] bg-[#121212] lg:hidden">
+            <RightColumn diffEntries={threadState.diffEntries} variant="drawer" />
+          </div>
+        ) : null}
 
         {isDesktop && containerWidth > 0 ? (
           <>

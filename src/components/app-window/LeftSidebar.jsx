@@ -20,6 +20,7 @@ export function LeftSidebar({
   onClose,
   onToggleMaximize,
   isMaximized = false,
+  variant = 'desktop',
 }) {
   const [openGroups, setOpenGroups] = useState(() => ({
     top: true,
@@ -43,7 +44,13 @@ export function LeftSidebar({
   }
 
   return (
-    <aside className="relative order-4 flex min-h-0 flex-col overflow-hidden bg-[#141415] lg:order-none lg:col-start-1 lg:row-[1/3] lg:border-r lg:border-white/[0.05]">
+    <aside
+      className={`relative min-h-0 flex-col overflow-hidden bg-[#141415] ${
+        variant === 'drawer'
+          ? 'flex h-full w-full border-r border-white/[0.08]'
+          : 'hidden lg:order-none lg:col-start-1 lg:row-[1/3] lg:flex lg:border-r lg:border-white/[0.05]'
+      }`}
+    >
       <div
         onPointerDown={onHeaderPointerDown}
         className={`px-3.5 py-3 ${

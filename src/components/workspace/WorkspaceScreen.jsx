@@ -4,8 +4,9 @@ import { works } from '../../works';
 import { AppWindow } from '../app-window/AppWindow';
 import { DesktopBackdrop } from '../desktop/DesktopBackdrop';
 import { DesktopMenuBar } from '../desktop/DesktopMenuBar';
+import { MacosHomeScreen } from '../home/MacosHomeScreen';
 import { OnloadAnimation } from '../onload/OnloadAnimation';
-import { LauncherTerminalWindow } from '../terminal/LauncherTerminalWindow';
+import { SshConnectScreen } from '../home/SshConnectScreen';
 import { PAGE_BACKGROUND_COLOR } from '../../constants/window';
 import { getThreadState } from '../../utils/threadState';
 import { useDesktopWindows } from '../../hooks/useDesktopWindows';
@@ -13,10 +14,9 @@ import { useDesktopWindows } from '../../hooks/useDesktopWindows';
 export function WorkspaceScreen({
   threadType = 'works',
   displayMode,
-  terminalCommand,
-  terminalLog,
-  onTerminalCommandChange,
-  onTerminalSubmit,
+  onSelectCui,
+  onSelectGui,
+  onBackHome,
 }) {
   const { id } = useParams();
   const selectedWork = threadType === 'works' && id ? works.find((work) => work.id === id) ?? null : null;
@@ -31,8 +31,6 @@ export function WorkspaceScreen({
     appShellProps,
     desktopViewportRef,
     dragState,
-    terminalShellProps,
-    visibleWindows,
     windowFrameRefs,
     windowFrames,
   } = useDesktopWindows(displayMode);
@@ -50,111 +48,46 @@ export function WorkspaceScreen({
         }`}
       >
         <div className="desktop-menu-reveal">
-          <DesktopMenuBar displayMode={displayMode} />
+          <DesktopMenuBar displayMode={displayMode} onBackHome={onBackHome} />
         </div>
 
         <div className="desktop-window-reveal relative flex-1 overflow-hidden px-3 pt-3 sm:px-5 sm:pt-5 lg:p-0">
-          <div className="flex h-full flex-col gap-4 lg:hidden">
-            {displayMode === 'cli' ? (
-              visibleWindows.terminal ? (
-                <div className="min-h-0 flex-1">
-                  <LauncherTerminalWindow
+          {displayMode === 'home' ? (
+            <MacosHomeScreen onSelectCui={onSelectCui} onSelectGui={onSelectGui} />
+          ) : null}
+
+          {displayMode === 'cui' ? <SshConnectScreen onBackHome={onBackHome} /> : null}
+
+          {displayMode === 'app' ? (
+            <>
+              <div className="flex h-full min-h-0 flex-col lg:hidden">
+                <AppWindow threadType={effectiveThreadType} selectedWork={selectedWork} threadState={threadState} />
+              </div>
+
+              <div ref={desktopViewportRef} className="relative hidden h-full lg:block">
+                <div
+                  ref={(node) => {
+                    windowFrameRefs.current.app = node;
+                  }}
+                  style={{
+                    left: `${windowFrames.app.x}px`,
+                    top: `${windowFrames.app.y}px`,
+                    width: `${windowFrames.app.width}px`,
+                    height: `${windowFrames.app.height}px`,
+                    zIndex: activeWindow === 'app' ? 30 : 20,
+                  }}
+                  className={`desktop-window-frame absolute ${dragState?.key === 'app' ? 'desktop-window-frame--dragging' : ''}`}
+                >
+                  <AppWindow
                     threadType={effectiveThreadType}
                     selectedWork={selectedWork}
                     threadState={threadState}
-                    displayMode={displayMode}
-                    terminalCommand={terminalCommand}
-                    terminalLog={terminalLog}
-                    onTerminalCommandChange={onTerminalCommandChange}
-                    onTerminalSubmit={onTerminalSubmit}
-                    shellProps={terminalShellProps}
+                    shellProps={appShellProps}
                   />
                 </div>
-              ) : null
-            ) : (
-              <>
-                {visibleWindows.terminal ? (
-                  <div className="shrink-0">
-                    <LauncherTerminalWindow
-                      threadType={effectiveThreadType}
-                      selectedWork={selectedWork}
-                      threadState={threadState}
-                      displayMode={displayMode}
-                      terminalCommand={terminalCommand}
-                      terminalLog={terminalLog}
-                      onTerminalCommandChange={onTerminalCommandChange}
-                      onTerminalSubmit={onTerminalSubmit}
-                      shellProps={terminalShellProps}
-                    />
-                  </div>
-                ) : null}
-
-                {visibleWindows.app ? (
-                  <div className="min-h-0 flex-1">
-                    <AppWindow
-                      threadType={effectiveThreadType}
-                      selectedWork={selectedWork}
-                      threadState={threadState}
-                      shellProps={appShellProps}
-                    />
-                  </div>
-                ) : null}
-              </>
-            )}
-          </div>
-
-          <div ref={desktopViewportRef} className="relative hidden h-full lg:block">
-            {visibleWindows.terminal ? (
-              <div
-                ref={(node) => {
-                  windowFrameRefs.current.terminal = node;
-                }}
-                style={{
-                  left: `${windowFrames.terminal.x}px`,
-                  top: `${windowFrames.terminal.y}px`,
-                  width: `${windowFrames.terminal.width}px`,
-                  height: `${windowFrames.terminal.height}px`,
-                  zIndex: activeWindow === 'terminal' ? 30 : 20,
-                }}
-                className={`desktop-window-frame absolute ${dragState?.key === 'terminal' ? 'desktop-window-frame--dragging' : ''}`}
-              >
-                <LauncherTerminalWindow
-                  threadType={effectiveThreadType}
-                  selectedWork={selectedWork}
-                  threadState={threadState}
-                  displayMode={displayMode}
-                  terminalCommand={terminalCommand}
-                  terminalLog={terminalLog}
-                  onTerminalCommandChange={onTerminalCommandChange}
-                  onTerminalSubmit={onTerminalSubmit}
-                  shellProps={terminalShellProps}
-                />
               </div>
-            ) : null}
-
-            {visibleWindows.app ? (
-              <div
-                ref={(node) => {
-                  windowFrameRefs.current.app = node;
-                }}
-                style={{
-                  left: `${windowFrames.app.x}px`,
-                  top: `${windowFrames.app.y}px`,
-                  width: `${windowFrames.app.width}px`,
-                  height: `${windowFrames.app.height}px`,
-                  zIndex: activeWindow === 'app' ? 30 : 20,
-                }}
-                className={`desktop-window-frame absolute ${dragState?.key === 'app' ? 'desktop-window-frame--dragging' : ''}`}
-              >
-                <AppWindow
-                  threadType={effectiveThreadType}
-                  selectedWork={selectedWork}
-                  threadState={threadState}
-                  shellProps={appShellProps}
-                />
-              </div>
-            ) : null}
-          </div>
+            </>
+          ) : null}
         </div>
       </div>
     </div>

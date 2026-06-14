@@ -24,7 +24,7 @@ export function CliHomeScreen() {
                 className="text-[2.8px] leading-[1.0] text-[#f0b186] sm:text-[3.2px] md:text-[3.6px]"
               />
           </div>
-          <div className="mt-3 w-full text-center text-[12px] text-white/68">Masaking • Web creator • Kochi, Japan</div>
+          <div className="mt-3 w-full text-center text-[12px] text-white/68">Masaking • AI-Native Full-Stack Developer • Kochi, Japan</div>
           <div className="w-full text-center text-[12px] text-white/42">Scroll inside the portrait frame if needed.</div>
         </section>
 

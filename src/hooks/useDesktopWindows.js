@@ -12,6 +12,7 @@ export function useDesktopWindows(displayMode) {
   );
   const [activeWindow, setActiveWindow] = useState(displayMode === 'app' ? 'app' : 'terminal');
   const [closedWindows, setClosedWindows] = useState(() => ({ terminal: false, app: false }));
+  const [mobileMaximizedWindow, setMobileMaximizedWindow] = useState(null);
   const [dragState, setDragState] = useState(null);
   const windowFrameRefs = useRef({ terminal: null, app: null });
   const windowAnimationRefs = useRef({ terminal: null, app: null });
@@ -134,9 +135,16 @@ export function useDesktopWindows(displayMode) {
 
   useEffect(() => {
     setClosedWindows({ terminal: false, app: false });
+    setMobileMaximizedWindow(null);
     setActiveWindow(displayMode === 'app' ? 'app' : 'terminal');
     setDragState(null);
   }, [displayMode]);
+
+  useEffect(() => {
+    if (isDesktop) {
+      setMobileMaximizedWindow(null);
+    }
+  }, [isDesktop]);
 
   useEffect(() => {
     if (!isDesktop) {
@@ -235,7 +243,13 @@ export function useDesktopWindows(displayMode) {
   }
 
   function toggleWindowMaximize(windowKey) {
-    if (!isDesktop || closedWindows[windowKey]) {
+    if (closedWindows[windowKey]) {
+      return;
+    }
+
+    if (!isDesktop) {
+      setActiveWindow(windowKey);
+      setMobileMaximizedWindow((currentWindowKey) => (currentWindowKey === windowKey ? null : windowKey));
       return;
     }
 
@@ -284,6 +298,7 @@ export function useDesktopWindows(displayMode) {
   function closeWindow(windowKey) {
     cancelWindowFrameAnimation(windowKey, true);
     setDragState((currentDragState) => (currentDragState?.key === windowKey ? null : currentDragState));
+    setMobileMaximizedWindow((currentWindowKey) => (currentWindowKey === windowKey ? null : currentWindowKey));
     setClosedWindows((currentClosedWindows) => ({
       ...currentClosedWindows,
       [windowKey]: true,
@@ -306,13 +321,13 @@ export function useDesktopWindows(displayMode) {
   }
 
   const visibleWindows = {
-    terminal: !closedWindows.terminal,
-    app: displayMode === 'app' && !closedWindows.app,
+    terminal: !closedWindows.terminal && (!mobileMaximizedWindow || mobileMaximizedWindow === 'terminal'),
+    app: displayMode === 'app' && !closedWindows.app && (!mobileMaximizedWindow || mobileMaximizedWindow === 'app'),
   };
 
   const terminalShellProps = {
     active: activeWindow === 'terminal',
-    isMaximized: Boolean(windowFrames.terminal?.isMaximized),
+    isMaximized: isDesktop ? Boolean(windowFrames.terminal?.isMaximized) : mobileMaximizedWindow === 'terminal',
     onClose: () => closeWindow('terminal'),
     onWindowPointerDown: () => focusWindow('terminal'),
     onHeaderPointerDown: (event) => startWindowDrag('terminal', event),
@@ -321,7 +336,7 @@ export function useDesktopWindows(displayMode) {
 
   const appShellProps = {
     active: activeWindow === 'app',
-    isMaximized: Boolean(windowFrames.app?.isMaximized),
+    isMaximized: isDesktop ? Boolean(windowFrames.app?.isMaximized) : mobileMaximizedWindow === 'app',
     onClose: () => closeWindow('app'),
     onWindowPointerDown: () => focusWindow('app'),
     onHeaderPointerDown: (event) => startWindowDrag('app', event),

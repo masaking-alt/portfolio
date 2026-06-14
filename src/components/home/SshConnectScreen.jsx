@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Check, Copy, Terminal } from 'lucide-react';
 
-const SSH_COMMAND = 'ssh ssh.masaking.net';
+const SSH_COMMAND = 'ssh ssh.msking.net';
 
 function copyTextWithSelectionFallback(text) {
   const activeElement = document.activeElement;

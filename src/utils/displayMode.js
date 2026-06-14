@@ -3,7 +3,7 @@ export function getModeLabel(displayMode) {
     return 'Masaking';
   }
   if (displayMode === 'cui') {
-    return 'Masaking CUI';
+    return 'Masaking CLI';
   }
   if (displayMode === 'app') {
     return 'Masaking App';
